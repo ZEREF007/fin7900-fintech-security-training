@@ -114,6 +114,12 @@
 			"type": "shell",
 			"command": "cd client && npm run build",
 			"problemMatcher": []
+		},
+		{
+			"label": "Build with GA4",
+			"type": "shell",
+			"command": "cd client && npm run build",
+			"problemMatcher": []
 		}
 	]
 }
