@@ -141,12 +141,17 @@ html:not(.dark) .text-slate-300 { color: #1e293b !important; }  /* slate-800 –
 html:not(.dark) .text-slate-400 { color: #1e293b !important; }  /* forced dark for readability */
 html:not(.dark) .text-slate-500 { color: #334155 !important; }  /* slate-700 – clear on white */
 
-/* ── White text: remap to near-black, preserve inside coloured/gradient containers ── */
+/* ── White text: remap to near-black on light backgrounds ───── */
 html:not(.dark) .text-white { color: #0f172a !important; }
 
-/* Restore white text inside dark gradient / colored hero sections */
-html:not(.dark) [class*="bg-gradient-"] .text-white,
-html:not(.dark) [class*="bg-hero"]       .text-white,
+/* ═══════════════════════════════════════════════════════════════
+   RESTORE WHITE TEXT whenever the element itself OR its ancestor
+   has a dark / coloured background — light bg → dark text is the
+   ONLY case where the remap above should apply.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Gradient containers (covers from-* utility classes) */
+html:not(.dark) [class*="bg-gradient-"]  .text-white,
 html:not(.dark) [class*="from-brand"]    .text-white,
 html:not(.dark) [class*="from-blue-6"]   .text-white,
 html:not(.dark) [class*="from-blue-7"]   .text-white,
@@ -162,6 +167,60 @@ html:not(.dark) [class*="from-amber-"]   .text-white,
 html:not(.dark) [class*="from-emerald"]  .text-white,
 html:not(.dark) [class*="from-purple"]   .text-white,
 html:not(.dark) [class*="from-violet"]   .text-white { color: #ffffff !important; }
+
+/* Solid coloured background containers → children stay white */
+html:not(.dark) [class*="bg-brand-"]    .text-white,
+html:not(.dark) [class*="bg-purple-6"]  .text-white,
+html:not(.dark) [class*="bg-purple-7"]  .text-white,
+html:not(.dark) [class*="bg-purple-8"]  .text-white,
+html:not(.dark) [class*="bg-purple-9"]  .text-white,
+html:not(.dark) [class*="bg-indigo-6"]  .text-white,
+html:not(.dark) [class*="bg-indigo-7"]  .text-white,
+html:not(.dark) [class*="bg-indigo-8"]  .text-white,
+html:not(.dark) [class*="bg-indigo-9"]  .text-white,
+html:not(.dark) [class*="bg-blue-6"]    .text-white,
+html:not(.dark) [class*="bg-blue-7"]    .text-white,
+html:not(.dark) [class*="bg-blue-8"]    .text-white,
+html:not(.dark) [class*="bg-blue-9"]    .text-white,
+html:not(.dark) [class*="bg-emerald-6"] .text-white,
+html:not(.dark) [class*="bg-emerald-7"] .text-white,
+html:not(.dark) [class*="bg-emerald-8"] .text-white,
+html:not(.dark) [class*="bg-emerald-9"] .text-white,
+html:not(.dark) [class*="bg-red-6"]     .text-white,
+html:not(.dark) [class*="bg-red-7"]     .text-white,
+html:not(.dark) [class*="bg-red-8"]     .text-white,
+html:not(.dark) [class*="bg-red-9"]     .text-white,
+html:not(.dark) [class*="bg-amber-6"]   .text-white,
+html:not(.dark) [class*="bg-amber-7"]   .text-white,
+html:not(.dark) [class*="bg-amber-8"]   .text-white,
+html:not(.dark) [class*="bg-rose-6"]    .text-white,
+html:not(.dark) [class*="bg-rose-7"]    .text-white,
+html:not(.dark) [class*="bg-rose-8"]    .text-white { color: #ffffff !important; }
+
+/* Elements that ARE themselves coloured (buttons, badges, etc.) */
+html:not(.dark) [class*="bg-brand-"].text-white,
+html:not(.dark) [class*="bg-purple-6"].text-white,
+html:not(.dark) [class*="bg-purple-7"].text-white,
+html:not(.dark) [class*="bg-indigo-6"].text-white,
+html:not(.dark) [class*="bg-blue-6"].text-white,
+html:not(.dark) [class*="bg-blue-7"].text-white,
+html:not(.dark) [class*="bg-emerald-6"].text-white,
+html:not(.dark) [class*="bg-emerald-7"].text-white,
+html:not(.dark) [class*="bg-red-6"].text-white,
+html:not(.dark) [class*="bg-red-7"].text-white,
+html:not(.dark) [class*="bg-amber-6"].text-white,
+html:not(.dark) [class*="bg-rose-6"].text-white  { color: #ffffff !important; }
+
+/* Hero overlay: absolute-positioned text sitting over a dark gradient
+   The text div is a sibling of the gradient overlay inside a relative
+   wrapper — target via the shadow-black utility on that wrapper */
+html:not(.dark) .shadow-black\/30 .text-white,
+html:not(.dark) [class*="shadow-black"] .text-white { color: #ffffff !important; }
+
+/* Absolute positioned content over dark image overlays */
+html:not(.dark) .absolute.inset-0 .text-white  { color: #ffffff !important; }
+html:not(.dark) .absolute.inset-0 .text-slate-300 { color: rgba(255,255,255,0.85) !important; }
+html:not(.dark) .absolute.inset-0 .text-slate-400 { color: rgba(255,255,255,0.7)  !important; }
 
 /* btn-primary always shows white text */
 html:not(.dark) .btn-primary,
