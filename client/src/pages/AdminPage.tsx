@@ -77,7 +77,7 @@ export default function AdminPage() {
             <Shield className="w-8 h-8 text-brand-400" />
             <div>
               <h1 className="text-3xl font-extrabold text-white">Admin Dashboard</h1>
-              <p className="text-slate-400 text-sm">FIN7900 Training Platform — Administrator</p>
+              <p className="text-slate-400 text-sm">FinTech Security Training — Administrator</p>
             </div>
           </div>
           {/* Tabs */}

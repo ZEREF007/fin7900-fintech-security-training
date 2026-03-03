@@ -107,14 +107,14 @@ export default function ReferencesPage() {
       <div className="bg-gradient-to-br from-slate-900 via-purple-950/30 to-slate-900 border-b border-slate-800/60">
         <div className="max-w-5xl mx-auto px-6 py-16">
           <div className="flex items-center gap-2 mb-4">
-            <span className="badge badge-purple">Academic References</span>
-            <span className="text-slate-400 text-sm">APA 7th Edition</span>
+            <span className="badge badge-purple">Sources &amp; References</span>
+            <span className="text-slate-400 text-sm">Industry &amp; Regulatory Sources</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
             📑 Course <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">References</span>
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl leading-relaxed">
-            Full bibliography for FIN7900 FinTech Security Training. All citations formatted in APA 7th edition as required by Hong Kong Baptist University guidelines.
+            Research sources and further reading for the FinTech Security Training programme. All references link to publicly available reports, regulatory documents, and industry publications.
           </p>
         </div>
       </div>
@@ -123,8 +123,8 @@ export default function ReferencesPage() {
         {/* Citation note */}
         <div className="bg-amber-950/30 border border-amber-700/30 rounded-2xl p-5 mb-10">
           <p className="text-amber-200 text-sm leading-relaxed">
-            <strong>📌 Citation Format:</strong> All references are formatted in APA 7th edition as required by Hong Kong Baptist University's academic guidelines. DOI or URL is included where publicly available. Retrieved dates omitted for stable institutional documents.{' '}
-            <strong>GenAI tools (ChatGPT, Claude) were used for drafting assistance only</strong> — all factual claims are sourced from the references below.
+            <strong>📌 Sources:</strong> All references link to publicly available reports, regulatory documents, and industry publications. DOI or URL is included where available.{' '}
+            AI tools were used to assist with drafting — all factual claims are verified against the sources listed below.
           </p>
         </div>
 

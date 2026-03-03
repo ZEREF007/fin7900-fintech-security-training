@@ -134,7 +134,7 @@ export default function ModulePage() {
         className="mb-10"
       >
         <h2 className="section-title">🎬 Module Video</h2>
-        <p className="section-sub">Watch the instructor walkthrough for this module.</p>
+        <p className="section-sub">Watch the expert walkthrough for this module.</p>
         <div
           className="rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900/60 flex items-center justify-center"
           style={{ aspectRatio: '16/9' }}

@@ -97,7 +97,7 @@ export default function HomePage() {
       >
         <motion.div variants={fadeUp} className="inline-flex items-center gap-2 px-4 py-2 bg-brand-100 dark:bg-brand-900/40 border border-brand-200 dark:border-brand-700/40 rounded-full text-brand-700 dark:text-brand-300 text-xs font-semibold mb-6">
           <Shield className="w-3.5 h-3.5" />
-          FIN7900 FinTech Security Training
+          FinTech Security Training
         </motion.div>
 
         <motion.h1 variants={fadeUp} className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white mb-6 leading-tight">

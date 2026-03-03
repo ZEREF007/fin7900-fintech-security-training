@@ -58,7 +58,7 @@ const sections = [
   {
     icon: Mail,
     title: 'Contact',
-    content: 'If you have concerns about how your data is handled, or wish to exercise your data rights, please contact the course administrator via the contact details provided in the course syllabus. This is an academic project platform operated under HKBU FIN7900 Individual Assignment guidelines.',
+    content: 'If you have concerns about how your data is handled, or wish to exercise your data rights, please contact the platform administrator at the email address shown on the contact page. We aim to respond to all data requests within 10 business days.',
   },
 ]
 
@@ -73,7 +73,7 @@ export default function PrivacyPage() {
             🔏 Privacy &amp; <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Data Policy</span>
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl leading-relaxed">
-            How the FIN7900 FinTech Security Training Platform collects, uses, and protects your personal data — in full compliance with PDPO (Cap. 486).
+            How the FinTech Security Training Platform collects, uses, and protects your personal data — in full compliance with PDPO (Cap. 486).
           </p>
           <div className="flex flex-wrap gap-3 mt-6">
             <span className="bg-emerald-900/30 border border-emerald-700/40 text-emerald-300 text-xs px-3 py-1.5 rounded-full font-medium">✅ PDPO Compliant</span>
@@ -111,8 +111,8 @@ export default function PrivacyPage() {
 
         {/* Footer note */}
         <div className="mt-10 text-center text-slate-500 text-xs space-y-1">
-          <p>This privacy policy applies to the FIN7900 Individual Assignment Training Platform.</p>
-          <p>This is an academic project and is not a commercial product.</p>
+          <p>This privacy policy applies to the FinTech Security Training Platform.</p>
+          <p>Last reviewed: 2025</p>
         </div>
 
         {/* Quick Tips */}

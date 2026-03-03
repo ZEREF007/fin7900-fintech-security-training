@@ -77,7 +77,7 @@ export default function ThankYouPage() {
             🎉 Course <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Complete!</span>
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-xl leading-relaxed max-w-2xl mx-auto">
-            Congratulations on completing the <strong className="text-slate-900 dark:text-white">FIN7900 FinTech Security Training</strong> programme. You now have a solid understanding of data breach prevention and cybersecurity in FinTech.
+            Congratulations on completing the <strong className="text-slate-900 dark:text-white">FinTech Security Training</strong> programme. You now have a solid understanding of data breach prevention and cybersecurity in FinTech.
           </p>
         </motion.div>
 
@@ -135,8 +135,8 @@ export default function ThankYouPage() {
 
         {/* Footer message */}
         <motion.div variants={itemVariants} className="text-center mt-8 text-slate-500 dark:text-slate-600 text-sm">
-          <p>FIN7900 Individual Assignment — Hong Kong Baptist University</p>
           <p className="mt-1">FinTech Security Training Platform</p>
+          <p className="mt-1 text-xs text-slate-400 dark:text-slate-700">This platform originated as an academic project and has since grown into a standalone professional learning resource.</p>
         </motion.div>
       </motion.div>
     </div>

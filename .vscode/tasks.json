@@ -90,6 +90,24 @@
 			"type": "shell",
 			"command": "cd \"/Users/ace/Desktop/Individual Assignment FIN7900\" && git init && git add . && git status | head -30",
 			"problemMatcher": []
+		},
+		{
+			"label": "Git Commit",
+			"type": "shell",
+			"command": "cd \"/Users/ace/Desktop/Individual Assignment FIN7900\" && git config user.email \"icyace007@gmail.com\" && git config user.name \"FIN7900\" && git branch -m main && git commit -m \"Initial commit: FIN7900 FinTech Security Training Platform\"",
+			"problemMatcher": []
+		},
+		{
+			"label": "Git Push to GitHub",
+			"type": "shell",
+			"command": "cd \"/Users/ace/Desktop/Individual Assignment FIN7900\" && git remote add origin https://github.com/ZEREF007/fin7900-fintech-security-training.git && git push -u origin main 2>&1",
+			"problemMatcher": []
+		},
+		{
+			"label": "Build with debranded content",
+			"type": "shell",
+			"command": "cd client && npm run build",
+			"problemMatcher": []
 		}
 	]
 }
