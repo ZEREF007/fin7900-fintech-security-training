@@ -1,0 +1,223 @@
+export interface Question {
+  id: number
+  difficulty: 'basic' | 'intermediate' | 'advanced'
+  module: string
+  objective: string
+  question: string
+  options: string[]
+  correct: number
+  explanation: string
+}
+
+export const QUIZ_DATA: Question[] = [
+  {
+    id: 1, difficulty: 'basic', module: 'Module 1', objective: 'Define a data breach',
+    question: 'Which of the following best defines a "data breach" in the context of a FinTech digital wallet?',
+    options: ['A planned system upgrade that temporarily takes a service offline','Any security incident in which sensitive or confidential data is accessed or stolen by an unauthorised party','A bug in the mobile app that causes incorrect transaction amounts','A regulatory audit of financial transaction records'],
+    correct: 1,
+    explanation: 'A data breach is specifically an incident where sensitive, protected, or confidential information is accessed, disclosed, or stolen by an unauthorised party — whether through external hacking, insider misuse, accidental disclosure, or physical theft.',
+  },
+  {
+    id: 2, difficulty: 'basic', module: 'Module 1', objective: 'Identify types of data breaches',
+    question: 'A customer support agent emails a spreadsheet containing 5,000 customer records to their personal Gmail account "to work from home." This is best classified as:',
+    options: ['An external cyberattack','A phishing incident','An accidental insider disclosure / data breach','A denial-of-service attack'],
+    correct: 2,
+    explanation: 'When an employee sends customer personal data to an unauthorised destination (such as a personal email account), this constitutes an insider data breach — specifically an accidental or negligent insider disclosure. This violates DPP4 of Hong Kong\'s PDPO.',
+  },
+  {
+    id: 3, difficulty: 'basic', module: 'Module 1', objective: 'Understand HK regulatory obligations',
+    question: 'Under Hong Kong\'s PDPO, which Data Protection Principle specifically addresses data security and protection from unauthorised access?',
+    options: ['DPP1 — Purpose limitation','DPP3 — Use limitation','DPP4 — Data security','DPP6 — Data access and correction'],
+    correct: 2,
+    explanation: 'Data Protection Principle 4 (DPP4) under Hong Kong\'s PDPO (Cap. 486) specifically requires data users to take "all practicable steps" to ensure that personal data is protected against any unauthorised or accidental access, processing, erasure, loss, or use.',
+  },
+  {
+    id: 4, difficulty: 'basic', module: 'Module 1', objective: 'Understand why detection time matters',
+    question: 'Why does the time it takes to detect a data breach matter so much from a business perspective?',
+    options: ['Faster detection only matters for the IT department, not for business impact','The longer a breach goes undetected, the more data attackers can steal and the higher the total cost','Detection time has no impact if the data is encrypted','Regulators only fine companies that detect breaches, so slower detection is financially safer'],
+    correct: 1,
+    explanation: 'The longer a breach goes undetected, the greater the damage. During undetected periods, attackers can steal more data, move to additional systems, and create hidden access points. Every additional day of undetected access increases potential harm.',
+  },
+  {
+    id: 5, difficulty: 'basic', module: 'Module 2', objective: 'Identify phishing',
+    question: 'A staff member receives an email appearing to be from your banking partner, requesting they click a link and enter credentials for an urgent "security upgrade." This is an example of:',
+    options: ['A legitimate security procedure','Phishing / social engineering','SQL injection','A DDoS attack'],
+    correct: 1,
+    explanation: 'This describes a classic phishing (specifically spear phishing) attack. Phishing and social engineering account for 36% of all data breaches according to Verizon DBIR 2024, making it the single most common initial attack vector.',
+  },
+  {
+    id: 6, difficulty: 'basic', module: 'Module 3', objective: 'Understand breach costs',
+    question: 'Beyond direct fines and legal fees, which cost of a data breach is typically the most financially damaging for a FinTech company over the long term?',
+    options: ['The cost of sending notification letters to affected customers','Staff overtime pay during the security investigation','Loss of customer trust, leading to account closures and damage to the company\'s reputation','The cost of purchasing new antivirus software after the breach'],
+    correct: 2,
+    explanation: 'IBM consistently finds that "lost business" (customer churn + brand damage) is the single largest component of total breach cost, often exceeding 35-40% of the total. For FinTech, where the value proposition is trust, reputational damage can be catastrophic.',
+  },
+  {
+    id: 7, difficulty: 'basic', module: 'Module 4', objective: 'Define MFA',
+    question: 'Multi-Factor Authentication (MFA) requires users to verify their identity using two or more independent authentication factors. Which correctly describes MFA?',
+    options: ['Using a very long password that combines letters, numbers, and symbols','Requiring users to verify their identity using two or more independent authentication factors','Requiring multiple administrators to approve system changes','Encrypting all data transmissions between the app and the server'],
+    correct: 1,
+    explanation: 'MFA requires at least two factors from different categories: something you KNOW (password), something you HAVE (OTP), and something you ARE (biometric). IBM (2024) found MFA saved organisations an average of US$500,000 per breach.',
+  },
+  {
+    id: 8, difficulty: 'basic', module: 'Module 2', objective: 'Understand patch management urgency',
+    question: 'Your security team alerts you to a critical vulnerability in your wallet app\'s server software. A fix is available today. What is the most appropriate response?',
+    options: ['Schedule it for the next quarterly maintenance window','Monitor the situation — if no attack in 30 days, the risk is probably low','Apply the patch urgently, within 24–48 hours, following your change management process','Wait to see if other companies report being attacked first'],
+    correct: 2,
+    explanation: 'When a critical vulnerability is discovered and a patch is available, the correct response is to apply it urgently — within 24–48 hours. The window between a vulnerability\'s announcement and active exploitation can be extremely short.',
+  },
+  {
+    id: 9, difficulty: 'basic', module: 'Module 1', objective: 'Understand dark web data value',
+    question: 'Why are digital wallet customers particularly valuable targets for cybercriminals compared to users of a standard social media platform?',
+    options: ['Digital wallet users are more likely to respond to phishing emails','Digital wallets aggregate identity, biometric, payment, and behavioural data in one accessible location','Digital wallets have weaker passwords than social media users','Social media platforms have better cybersecurity despite holding more users'],
+    correct: 1,
+    explanation: 'Digital wallets are "data goldmines" aggregating multiple categories of high-value data. A complete digital wallet record provides everything needed for financial fraud, identity theft, and account takeover. Privacy Affairs (2024) reports a "fullz" package sells for ~US$310 on dark web markets.',
+  },
+  {
+    id: 10, difficulty: 'intermediate', module: 'Module 2', objective: 'Understand credential stuffing',
+    question: 'Your app experiences ~50,000 failed login attempts per hour from thousands of different IP addresses using valid email formats. This most likely indicates:',
+    options: ['A denial-of-service (DDoS) attack','A SQL injection attack','A credential stuffing attack using leaked credentials from other breaches','An insider threat — a disgruntled employee testing passwords'],
+    correct: 2,
+    explanation: 'High-volume login attempts from distributed IPs using plausible email formats is the signature of a credential stuffing attack. Attackers automate testing of leaked username/password pairs, relying on ~65% of people reusing passwords across services.',
+  },
+  {
+    id: 11, difficulty: 'intermediate', module: 'Module 2', objective: 'Understand SQL injection',
+    question: 'An attacker enters `\' OR 1=1 --` into your wallet app\'s login username field and gains access. This is an example of:',
+    options: ['Brute force attack','SQL injection','Cross-site scripting (XSS)','Man-in-the-middle attack'],
+    correct: 1,
+    explanation: '`\' OR 1=1 --` is a classic SQL injection payload. It manipulates the SQL query to bypass authentication. Mitigation: parameterised queries / prepared statements treat user input as data, never as executable code.',
+  },
+  {
+    id: 12, difficulty: 'intermediate', module: 'Module 2', objective: 'Understand access control',
+    question: 'A user discovers that by changing an account number in the URL they can view other customers\' balances. What security failure does this represent?',
+    options: ['The app\'s password requirements are too weak','The app is not checking whether a logged-in user is authorised to access the specific account they are requesting','The customer database is not encrypted','The app is vulnerable to spam or phishing emails'],
+    correct: 1,
+    explanation: 'This is an authorisation/access control failure. A properly built app must verify that the resource being requested belongs to the currently authenticated user — not just that the user is logged in.',
+  },
+  {
+    id: 13, difficulty: 'intermediate', module: 'Module 2', objective: 'Understand supply chain attacks',
+    question: 'Your wallet integrates a popular third-party KYC SDK. Unknown to you, attackers compromised the SDK vendor\'s build pipeline and inserted code that exfiltrates customer passport photos. This is:',
+    options: ['An insider threat by a vendor employee','A supply chain attack','A watering hole attack','A zero-day exploit'],
+    correct: 1,
+    explanation: 'A supply chain attack compromises a trusted third-party component to gain access to downstream targets — as in the SolarWinds attack (2020). Every third-party integration is a potential entry point requiring vendor security assessments.',
+  },
+  {
+    id: 14, difficulty: 'intermediate', module: 'Module 3', objective: 'Calculate regulatory fines',
+    question: 'Your FinTech processes data from EU residents. You suffer a breach affecting 200,000 EU customer records with €50M annual global turnover. Maximum fine under GDPR Article 83(4)?',
+    options: ['€500,000','€2 million','€10 million or 2% of global turnover','€20 million or 4% of global turnover (whichever is higher)'],
+    correct: 3,
+    explanation: 'GDPR Article 83(4) provides the higher penalty tier: €20 million OR 4% of total global annual turnover — whichever is HIGHER. With €50M turnover, 4% = €2M, but €20M is higher, so the maximum is €20M.',
+  },
+  {
+    id: 15, difficulty: 'intermediate', module: 'Module 3', objective: 'Understand customer impact',
+    question: 'After a breach affecting 50,000 customers, which most accurately represents likely customer response based on PwC research?',
+    options: ['Most customers will remain loyal if you compensate them with a small voucher','Only customers whose financial accounts were directly impacted will leave','A significant majority (>65%) would stop using your service, even if their data was not directly misused','Customer churn will be minimal if the breach occurred through a third-party vendor'],
+    correct: 2,
+    explanation: 'PwC Global Consumer Insights (2023): 87% said they would stop using a FinTech that mishandled their data; 65% would not return even if compensated. Customers do not distinguish between direct data misuse and "potential exposure."',
+  },
+  {
+    id: 16, difficulty: 'intermediate', module: 'Module 4', objective: 'Understand Zero Trust',
+    question: 'The Zero Trust security model — which principle best summarises it?',
+    options: ['Trust users inside the corporate network; only verify those connecting remotely','Never trust, always verify — every user, device, and request must be authenticated regardless of network location','Focus security spending only on perimeter defences (firewalls and VPNs)','Zero Trust means zero access to sensitive data for any employee by default'],
+    correct: 1,
+    explanation: '"Never trust, always verify." Zero Trust assumes breach by default and requires continuous verification of every user, device, and application. IBM (2024) found organisations with mature Zero Trust frameworks saved an average of US$2.22M per breach.',
+  },
+  {
+    id: 17, difficulty: 'intermediate', module: 'Module 4', objective: 'Understand encryption standards',
+    question: 'Your digital wallet stores customer payment card numbers in a database. To comply with PCI DSS v4.0, which encryption standard is required for stored cardholder data?',
+    options: ['MD5 hashing','Base64 encoding','AES-256 encryption','SHA-1 hashing'],
+    correct: 2,
+    explanation: 'PCI DSS v4.0 Requirement 3 mandates AES-256 for stored cardholder data. MD5/SHA-1 are broken hashing algorithms. Base64 is merely encoding, not encryption. Proper key management is equally critical.',
+  },
+  {
+    id: 18, difficulty: 'intermediate', module: 'Module 4', objective: 'Understand incident response',
+    question: 'You discover a data breach at 2 AM. Your Incident Response Plan should guide your team to take which action FIRST?',
+    options: ['Immediately delete all affected files to prevent further access','Notify the PCPD and all affected customers within 1 hour','Contain the breach — isolate affected systems while preserving forensic evidence','Call a press conference to disclose the breach publicly'],
+    correct: 2,
+    explanation: 'First priority is Containment — stopping the ongoing damage by isolating affected systems — while preserving forensic evidence. Do NOT delete affected files; that destroys evidence. The NIST IR phases: Preparation → Detection → Containment → Eradication → Recovery → Notification.',
+  },
+  {
+    id: 19, difficulty: 'intermediate', module: 'Module 4', objective: 'Understand vendor risk management',
+    question: 'Before integrating a new third-party analytics SDK into your wallet app, which security assessment is MOST critical?',
+    options: ['Checking the vendor\'s website design and user interface quality','Verifying the vendor\'s security certifications (ISO 27001, SOC2), data handling practices, and contractual security obligations','Confirming the SDK has positive reviews on GitHub','Testing the SDK functionality in a development environment only'],
+    correct: 1,
+    explanation: 'Vendor risk management is mandatory under HKMA SPM TM-G-1. Assess: security certifications (ISO 27001, SOC 2 Type II), data handling practices, contractual security obligations, and penetration test results.',
+  },
+  {
+    id: 20, difficulty: 'intermediate', module: 'Module 4', objective: 'Understand least privilege access',
+    question: 'A single cloud admin account is compromised. The attacker can access all customer databases, file storage, and server configurations. What security principle was violated?',
+    options: ['Principle of Password Complexity','Principle of Data Encryption','Principle of Least Privilege — the account had far more access than required','Principle of Network Segmentation'],
+    correct: 2,
+    explanation: 'The Principle of Least Privilege states every user/system/application should only have minimum access needed for its specific function. When violated, one stolen credential = access to everything. Least privilege limits the "blast radius."',
+  },
+  {
+    id: 21, difficulty: 'intermediate', module: 'Module 4', objective: 'Limit damage from insider access',
+    question: 'A support agent is tricked into giving away credentials. The attacker downloads 40,000 customer records. Beyond staff training, which additional control would most have limited the damage?',
+    options: ['Upgrading the company\'s network firewall','Adding encryption to the internal email system','Restricting support accounts from bulk exports, and requiring MFA','Requiring customers to reset their passwords every 30 days'],
+    correct: 2,
+    explanation: 'Two key controls: (1) Bulk export restrictions — support accounts should not be able to export thousands of records at once; (2) MFA — even if the password is stolen, the attacker cannot log in without the second factor. Together, they limit probability and blast radius.',
+  },
+  {
+    id: 22, difficulty: 'intermediate', module: 'Module 3', objective: 'Understand breach cost components',
+    question: 'According to IBM\'s (2024) cost decomposition methodology, which component of breach costs is typically the LARGEST?',
+    options: ['Detection and escalation costs','Regulatory fines and legal fees','Lost business — including customer churn and reputational damage','Notification costs (customer letters, credit monitoring)'],
+    correct: 2,
+    explanation: '"Lost business" — customer churn, lost revenue, brand damage, and rebuilding trust — consistently represents the largest single category at approximately 39% of total breach cost. For FinTech, where competitive advantage is trust, this proportion can be even higher.',
+  },
+  {
+    id: 23, difficulty: 'intermediate', module: 'Module 2', objective: 'Understand cloud misconfiguration',
+    question: 'A developer sets an Amazon S3 bucket containing 3 months of customer transaction logs to "Public." What type of breach does this represent?',
+    options: ['An external cyberattack','An accidental data breach caused by cloud misconfiguration','A physical breach','Not a breach — no one has specifically attacked the system'],
+    correct: 1,
+    explanation: 'A publicly accessible cloud storage bucket containing personal data constitutes a data breach even without a specific attacker. Automated scanners continuously scan the internet for public cloud storage. A public S3 bucket can be found within hours of creation.',
+  },
+  {
+    id: 24, difficulty: 'intermediate', module: 'Module 4', objective: 'Know HKMA requirements',
+    question: 'Under HKMA\'s Cybersecurity Fortification Initiative (CFI) 2.0, what is the primary mechanism used to assess a licensed institution\'s cybersecurity maturity?',
+    options: ['Annual self-certification by the CEO','A three-tier cybersecurity resilience benchmark with intelligence-led cyber attack simulations (iCAST)','Quarterly submission of firewall logs to the HKMA','Mandatory examination of all source code by HKMA inspectors'],
+    correct: 1,
+    explanation: 'CFI 2.0 is built around three pillars: (1) Cyber Resilience Assessment Framework (C-RAF) — assessments across 29 domains; (2) iCAST — intelligence-led red-team simulations; (3) Cybersecurity ecosystem development. Licensed institutions including SVF holders (digital wallet operators) must participate in C-RAF.',
+  },
+  {
+    id: 25, difficulty: 'advanced', module: 'Module 2', objective: 'Recognise multi-stage attack patterns',
+    question: 'An attacker researches developers on LinkedIn, sends a fake job offer, installs malware when the developer clicks a link, steals internal code, finds passwords in the code, and accesses the production database. Where are the most important defensive gaps?',
+    options: ['Only the firewall needs upgrading','The attack was too sophisticated to prevent','Multiple independent gaps: staff awareness, endpoint security, unsafe coding practices, and lack of separation between development and live systems','The developer should be personally liable — this is purely a human error problem'],
+    correct: 2,
+    explanation: 'This multi-stage attack succeeded because several independent controls were missing. "Defence in depth": (1) Staff awareness training would block initial entry; (2) Endpoint security could detect malware installation; (3) Secrets management would prevent passwords in code; (4) Environment separation prevents dev access reaching production. A single failure should not cause catastrophic loss.',
+  },
+  {
+    id: 26, difficulty: 'advanced', module: 'Module 3', objective: 'Understand overlapping regulatory obligations',
+    question: 'Your HK-based digital wallet processes data from both HK residents (PDPO) and EU residents (GDPR). You suffer a breach. Which statement is most accurate about your regulatory exposure?',
+    options: ['Only the PCPD can take action — GDPR does not apply to companies based outside Europe','GDPR only applies if your company has a physical office in an EU member state','Both PDPO and GDPR can apply simultaneously — GDPR applies to any company processing EU residents\' data regardless of where based, with fines up to €20M or 4% of global revenue','As long as you notify within 72 hours, you are fully exempt from fines'],
+    correct: 2,
+    explanation: 'GDPR has extra-territorial scope — it applies to any organisation processing personal data of EU residents regardless of where the organisation is headquartered. A HK-based FinTech serving EU customers is fully subject to GDPR. PDPO applies in parallel for HK residents. Both can impose penalties concurrently.',
+  },
+  {
+    id: 27, difficulty: 'advanced', module: 'Module 4', objective: 'Design security architecture',
+    question: 'You are designing a security architecture for a FinTech mobile wallet (PCI DSS, PDPO, GDPR). Which architectural principle should MOST influence your database design?',
+    options: ['Store all customer data in a single database for operational efficiency','Data minimisation, separation of sensitive data types, and field-level encryption for PII/PCI-scoped data','Store all PCI and personal data in the same cloud region to simplify compliance','Use NoSQL databases exclusively as they are inherently more secure'],
+    correct: 1,
+    explanation: 'Multi-regulatory design demands: (1) Data minimisation — only collect what is strictly necessary; (2) Separation — PCI-scoped data must be isolated in a hardened Cardholder Data Environment (CDE); (3) Field-level encryption for specific sensitive fields; (4) Tokenisation — replace actual card numbers with tokens. This limits "blast radius" if one component is compromised.',
+  },
+  {
+    id: 28, difficulty: 'advanced', module: 'Module 4', objective: 'Evaluate IRP effectiveness',
+    question: 'During a post-breach debrief, the team discovers forensic investigation was hampered because application logs were overwritten every 7 days, but the breach began 30 days earlier. Which best addresses this gap?',
+    options: ['Hire more security engineers to monitor logs manually','Implement SIEM with immutable, centrally stored logs retained for minimum 12 months, plus real-time anomaly alerting','Require all developers to review their own application logs weekly','Disable logging to prevent storage costs and focus on perimeter prevention'],
+    correct: 1,
+    explanation: 'HKMA SPM TM-G-1 and PCI DSS 10.7 both specify minimum log retention (PCI DSS requires at least 12 months). SIEM centralises logs in an immutable repository with real-time alerting for anomalous patterns. Centrally stored logs cannot be deleted by attackers who compromise individual systems.',
+  },
+  {
+    id: 29, difficulty: 'advanced', module: 'Module 4', objective: 'Evaluate breach response strategy',
+    question: 'Company A notifies affected customers within 24 hours, explains what was exposed, provides protective steps. Company B takes 6 weeks to disclose a similarly sized breach. What difference can Company A most likely expect?',
+    options: ['Company A will face higher regulatory fines for admitting the breach so quickly','No meaningful difference — customers leave regardless of how quickly they are notified','Company A will experience significantly less customer churn and stronger post-incident trust, because transparent and prompt notification preserves credibility','Company A\'s share price will drop more steeply because the news spreads faster'],
+    correct: 2,
+    explanation: 'Research consistently shows transparent, rapid notification leads to better outcomes than delayed or vague disclosure. Rapid notification respects customers\' right to take protective action and signals organisational competence. Delayed disclosure creates a second wave of reputational damage when the delay itself becomes the story.',
+  },
+  {
+    id: 30, difficulty: 'advanced', module: 'Multiple', objective: 'Apply integrated framework',
+    question: 'As Head of Business Development, you need to justify a HK$5M cybersecurity upgrade to the board. Using frameworks from this training, which argument is MOST compelling?',
+    options: ['Cybersecurity is an IT matter — business development should not need to justify it','It\'s required by law, so we have no choice','The expected value calculation shows HK$5M investment significantly reduces expected loss exceeding that investment when breach probability, IBM average cost, regulatory fines, and customer churn are modelled','Our competitors are doing it, so we should too'],
+    correct: 2,
+    explanation: 'The compelling business case combines: (1) Probability-weighted expected loss — if 15% annual breach probability × US$6M average cost = US$900K/year expected loss, or US$4.5M over 5 years; (2) Tail risk — GDPR fines and reputational damage represent catastrophic risks; (3) ROI from specific controls — IBM shows IRP saves $2.66M/breach, Zero Trust saves $2.22M/breach. Each individually offers positive expected ROI.',
+  },
+]

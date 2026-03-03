@@ -1,0 +1,95 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Build React App",
+			"type": "shell",
+			"command": "cd client && npm install && npm run build",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Start Server",
+			"type": "shell",
+			"command": "pkill -f 'node server.js' 2>/dev/null; sleep 1; node server.js",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Restart Server",
+			"type": "shell",
+			"command": "lsof -ti:3000 | xargs kill -9 2>/dev/null; sleep 2; node server.js",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Rebuild React (theme)",
+			"type": "shell",
+			"command": "cd client && npm run build",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Restart Server (theme)",
+			"type": "shell",
+			"command": "lsof -ti:3000 | xargs kill -9 2>/dev/null; sleep 1; node server.js",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build + Restart (polish)",
+			"type": "shell",
+			"command": "cd client && npm run build && lsof -ti:3000 | xargs kill -9 2>/dev/null; sleep 1; cd .. && node server.js",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Final Server Start",
+			"type": "shell",
+			"command": "lsof -ti:3000 | xargs kill -9 2>/dev/null; sleep 1; node server.js",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build React Client",
+			"type": "shell",
+			"command": "cd client && npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build and Restart Server",
+			"type": "shell",
+			"command": "cd client && npm run build && lsof -ti:3000 | xargs kill -9 2>/dev/null; sleep 1; cd .. && node server.js",
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Cleanup old files",
+			"type": "shell",
+			"command": "cd \"/Users/ace/Desktop/Individual Assignment FIN7900\" && rm -f admin.html auth.html dashboard.html game.html glossary.html index.html laws.html module1.html module2.html module3.html module4.html module5.html privacy.html quiz.html references.html thankyou.html build.sh && rm -rf assets/ .venv/ && rm -f '.DS_Store' '~$N7900 Individual Assignment Requirements and Guidelines.txt' && echo 'Cleaned up old files'",
+			"problemMatcher": []
+		},
+		{
+			"label": "Build React App",
+			"type": "shell",
+			"command": "cd client && npm run build",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "Git Init",
+			"type": "shell",
+			"command": "cd \"/Users/ace/Desktop/Individual Assignment FIN7900\" && git init && git add . && git status | head -30",
+			"problemMatcher": []
+		}
+	]
+}

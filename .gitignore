@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Database (local only — Render uses ephemeral storage)
+training.db
+training.db-shm
+training.db-wal
+*.db-shm
+*.db-wal
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Build output (Render runs the build command)
+# public/   ← keep commented out so local builds persist
+
+# Editor
+.vscode/settings.json
+.vscode/launch.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Logs
+*.log
+npm-debug.log*

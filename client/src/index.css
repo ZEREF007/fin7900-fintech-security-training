@@ -1,0 +1,310 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================
+   ROOT: LIGHT MODE DEFAULT (minimalist white)
+   ===================================================== */
+:root { color-scheme: light; }
+html.dark { color-scheme: dark; }
+
+@layer base {
+  * { @apply box-border; }
+
+  body {
+    @apply bg-slate-50 text-slate-900 font-sans antialiased;
+    @apply dark:bg-slate-950 dark:text-slate-100;
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  ::-webkit-scrollbar { @apply w-1.5; }
+  ::-webkit-scrollbar-track { @apply bg-slate-200 dark:bg-slate-900; }
+  ::-webkit-scrollbar-thumb { @apply bg-brand-400 dark:bg-brand-700 rounded-full; }
+}
+
+@layer components {
+  /* ── Card ─────────────────────────────────────────── */
+  .card {
+    @apply bg-white border border-slate-200/90 shadow-sm rounded-2xl p-6
+           hover:border-brand-300/60 hover:shadow-md transition-all duration-300;
+    @apply dark:bg-slate-800/60 dark:backdrop-blur-sm dark:border-slate-700/50
+           dark:shadow-none dark:hover:border-brand-600/40;
+  }
+
+  /* ── Slide card ───────────────────────────────────── */
+  .slide-card {
+    @apply bg-white border border-slate-200/90 rounded-2xl p-8;
+    @apply dark:bg-slate-800/60 dark:backdrop-blur-sm dark:border-slate-700/50;
+  }
+
+  /* ── Info boxes ───────────────────────────────────── */
+  .info-box { @apply rounded-xl p-4 mt-4 text-sm leading-relaxed; }
+  .info-box-info {
+    @apply bg-blue-50 border border-blue-200 text-blue-800;
+    @apply dark:bg-blue-950/60 dark:border-blue-700/40 dark:text-blue-200;
+  }
+  .info-box-warning {
+    @apply bg-amber-50 border border-amber-200 text-amber-800;
+    @apply dark:bg-amber-950/60 dark:border-amber-700/40 dark:text-amber-200;
+  }
+  .info-box-danger {
+    @apply bg-red-50 border border-red-200 text-red-800;
+    @apply dark:bg-red-950/60 dark:border-red-700/40 dark:text-red-200;
+  }
+  .info-box-success {
+    @apply bg-emerald-50 border border-emerald-200 text-emerald-800;
+    @apply dark:bg-emerald-950/60 dark:border-emerald-700/40 dark:text-emerald-200;
+  }
+
+  /* ── Stat card ────────────────────────────────────── */
+  .stat-card {
+    @apply bg-white border border-slate-200/90 shadow-sm rounded-2xl p-6 text-center;
+    @apply dark:bg-slate-800/50 dark:border-slate-700/30 dark:shadow-none;
+  }
+
+  /* ── Typography helpers ───────────────────────────── */
+  .section-title {
+    @apply text-2xl font-bold text-slate-900 mb-2;
+    @apply dark:text-white;
+  }
+  .section-sub {
+    @apply text-slate-500 text-sm mb-6;
+    @apply dark:text-slate-400;
+  }
+
+  /* ── Buttons ──────────────────────────────────────── */
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-brand-600 hover:bg-brand-500
+           text-white font-semibold rounded-xl transition-all duration-200
+           hover:shadow-lg hover:shadow-brand-600/30;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-6 py-3 bg-slate-100 hover:bg-slate-200
+           text-slate-700 font-semibold rounded-xl transition-all duration-200;
+    @apply dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-white;
+  }
+
+  /* ── Badges ───────────────────────────────────────── */
+  .badge { @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold; }
+  .badge-blue {
+    @apply bg-blue-100 text-blue-700 border border-blue-200;
+    @apply dark:bg-blue-900/60 dark:text-blue-300 dark:border-blue-700/40;
+  }
+  .badge-purple {
+    @apply bg-purple-100 text-purple-700 border border-purple-200;
+    @apply dark:bg-purple-900/60 dark:text-purple-300 dark:border-purple-700/40;
+  }
+  .badge-amber {
+    @apply bg-amber-100 text-amber-700 border border-amber-200;
+    @apply dark:bg-amber-900/60 dark:text-amber-300 dark:border-amber-700/40;
+  }
+  .badge-green {
+    @apply bg-emerald-100 text-emerald-700 border border-emerald-200;
+    @apply dark:bg-emerald-900/60 dark:text-emerald-300 dark:border-emerald-700/40;
+  }
+  .badge-red {
+    @apply bg-red-100 text-red-700 border border-red-200;
+    @apply dark:bg-red-900/60 dark:text-red-300 dark:border-red-700/40;
+  }
+}
+
+/* =====================================================================
+   LIGHT MODE GLOBAL OVERRIDES
+   Remap hardcoded dark Tailwind utilities used inline across page
+   components — zero page file changes needed.
+   ===================================================================== */
+
+/* ── Page / section backgrounds ─────────────────────────────── */
+html:not(.dark) .bg-slate-950   { background-color: #f1f5f9 !important; }
+html:not(.dark) .bg-slate-900   { background-color: #f8fafc !important; }
+html:not(.dark) .bg-slate-800   { background-color: #ffffff !important; }
+html:not(.dark) .bg-slate-700   { background-color: #f1f5f9 !important; }
+html:not(.dark) .bg-slate-600   { background-color: #e2e8f0 !important; }
+
+/* Opacity variants */
+html:not(.dark) .bg-slate-950\/95 { background-color: rgba(248,250,252,0.97) !important; }
+html:not(.dark) .bg-slate-900\/95 { background-color: rgba(255,255,255,0.97) !important; }
+html:not(.dark) .bg-slate-900\/80 { background-color: rgba(255,255,255,0.92) !important; }
+html:not(.dark) .bg-slate-900\/98 { background-color: rgba(255,255,255,0.98) !important; }
+html:not(.dark) .bg-slate-800\/60 { background-color: rgba(255,255,255,0.95) !important; }
+html:not(.dark) .bg-slate-800\/50 { background-color: rgba(255,255,255,0.90) !important; }
+html:not(.dark) .bg-slate-800\/20 { background-color: rgba(241,245,249,0.6) !important; }
+html:not(.dark) .bg-slate-700\/60 { background-color: rgba(241,245,249,0.9) !important; }
+html:not(.dark) .bg-slate-700\/50 { background-color: rgba(241,245,249,0.8) !important; }
+html:not(.dark) .bg-slate-700\/30 { background-color: rgba(241,245,249,0.6) !important; }
+
+/* ── Text: light slate values → strong, readable dark colours ── */
+html:not(.dark) .text-slate-100 { color: #0f172a !important; }  /* near-black */
+html:not(.dark) .text-slate-200 { color: #1e293b !important; }  /* slate-900 */
+html:not(.dark) .text-slate-300 { color: #1e293b !important; }  /* slate-800 – dark enough */
+html:not(.dark) .text-slate-400 { color: #1e293b !important; }  /* forced dark for readability */
+html:not(.dark) .text-slate-500 { color: #334155 !important; }  /* slate-700 – clear on white */
+
+/* ── White text: remap to near-black, preserve inside coloured/gradient containers ── */
+html:not(.dark) .text-white { color: #0f172a !important; }
+
+/* Restore white text inside dark gradient / colored hero sections */
+html:not(.dark) [class*="bg-gradient-"] .text-white,
+html:not(.dark) [class*="bg-hero"]       .text-white,
+html:not(.dark) [class*="from-brand"]    .text-white,
+html:not(.dark) [class*="from-blue-6"]   .text-white,
+html:not(.dark) [class*="from-blue-7"]   .text-white,
+html:not(.dark) [class*="from-blue-8"]   .text-white,
+html:not(.dark) [class*="from-blue-9"]   .text-white,
+html:not(.dark) [class*="from-indigo"]   .text-white,
+html:not(.dark) [class*="from-slate-8"]  .text-white,
+html:not(.dark) [class*="from-slate-9"]  .text-white,
+html:not(.dark) [class*="from-red-6"]    .text-white,
+html:not(.dark) [class*="from-red-7"]    .text-white,
+html:not(.dark) [class*="from-red-8"]    .text-white,
+html:not(.dark) [class*="from-amber-"]   .text-white,
+html:not(.dark) [class*="from-emerald"]  .text-white,
+html:not(.dark) [class*="from-purple"]   .text-white,
+html:not(.dark) [class*="from-violet"]   .text-white { color: #ffffff !important; }
+
+/* btn-primary always shows white text */
+html:not(.dark) .btn-primary,
+html:not(.dark) .btn-primary span { color: #ffffff !important; }
+
+/* ── Brand light shades: too pale on white → darken ─────────── */
+html:not(.dark) .text-brand-300 { color: #1822ab !important; }
+html:not(.dark) .text-brand-400 { color: #1e29d3 !important; }
+html:not(.dark) .text-brand-500 { color: #2f3dee !important; }
+html:not(.dark) .group:hover .group-hover\:text-brand-300,
+html:not(.dark) .hover\:text-brand-300:hover,
+html:not(.dark) .peer-hover\:text-brand-300 { color: #1822ab !important; }
+
+/* Accent light shades */
+html:not(.dark) .text-accent-400 { color: #7c3aed !important; }
+html:not(.dark) .text-accent-500 { color: #6d28d9 !important; }
+
+/* ── Borders ─────────────────────────────────────────────────── */
+html:not(.dark) .border-slate-700     { border-color: #e2e8f0 !important; }
+html:not(.dark) .border-slate-800     { border-color: #f1f5f9 !important; }
+html:not(.dark) .border-slate-900     { border-color: #f8fafc !important; }
+html:not(.dark) .border-slate-700\/60 { border-color: rgba(226,232,240,0.8) !important; }
+html:not(.dark) .border-slate-700\/50 { border-color: rgba(226,232,240,0.7) !important; }
+html:not(.dark) .border-slate-700\/40 { border-color: rgba(226,232,240,0.6) !important; }
+html:not(.dark) .border-slate-700\/30 { border-color: rgba(226,232,240,0.5) !important; }
+html:not(.dark) .border-slate-800\/50 { border-color: rgba(241,245,249,0.8) !important; }
+
+/* ── Hover overrides ─────────────────────────────────────────── */
+html:not(.dark) .hover\:bg-slate-800:hover     { background-color: #f1f5f9 !important; }
+html:not(.dark) .hover\:bg-slate-700:hover     { background-color: #e2e8f0 !important; }
+html:not(.dark) .hover\:bg-slate-600:hover     { background-color: #cbd5e1 !important; }
+
+/* ── Shadow: subtler in light ────────────────────────────────── */
+html:not(.dark) .shadow-xl  { box-shadow: 0 4px 24px rgba(0,0,0,0.07) !important; }
+html:not(.dark) .shadow-2xl { box-shadow: 0 8px 32px rgba(0,0,0,0.09) !important; }
+
+/* ── Form inputs ─────────────────────────────────────────────── */
+html:not(.dark) input,
+html:not(.dark) textarea,
+html:not(.dark) select {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #1e293b !important;
+}
+html:not(.dark) input::placeholder,
+html:not(.dark) textarea::placeholder { color: #94a3b8 !important; }
+html:not(.dark) input:focus,
+html:not(.dark) textarea:focus,
+html:not(.dark) select:focus {
+  border-color: #4158f5 !important;
+  box-shadow: 0 0 0 3px rgba(65,88,245,0.12) !important;
+  outline: none;
+}
+
+/* ── Dividers ────────────────────────────────────────────────── */
+html:not(.dark) .divide-slate-700 > * + * { border-color: #e2e8f0 !important; }
+html:not(.dark) .divide-slate-800 > * + * { border-color: #f1f5f9 !important; }
+
+/* ── Canvas (charts) ─────────────────────────────────────────── */
+canvas { max-width: 100%; }
+
+/* =====================================================================
+   CUSTOM CURSOR
+   ===================================================================== */
+* { cursor: default; }
+a,
+button,
+[role="button"],
+label,
+select,
+summary,
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+textarea { cursor: text; }
+
+/* =====================================================================
+   EXTRA ANIMATIONS
+   ===================================================================== */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33%       { transform: translateY(-8px) rotate(1deg); }
+  66%       { transform: translateY(4px) rotate(-1deg); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(65, 88, 245, 0); }
+  50%       { box-shadow: 0 0 0 10px rgba(65, 88, 245, 0.15); }
+}
+@keyframes slide-up {
+  0%   { opacity: 0; transform: translateY(20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.animate-float       { animation: float 6s ease-in-out infinite; }
+.animate-pulse-glow  { animation: pulse-glow 2.5s ease-in-out infinite; }
+.animate-slide-up    { animation: slide-up 0.5s ease-out forwards; }
+.btn-primary { animation: pulse-glow 3s ease-in-out infinite; }
+.btn-primary:hover { animation: none; }
+
+/* ── Inline-code / mono text ─────────────────────────────────── */
+html:not(.dark) .font-mono { color: #1e293b !important; }
+
+/* ── Italic / quote boxes (glossary example blocks) ─────────── */
+html:not(.dark) .border-l-2.border-brand-500\/60,
+html:not(.dark) [class*='border-l-2'] {
+  background-color: #eff6ff !important;
+  border-color: #4158f5 !important;
+  color: #1e40af !important;
+}
+
+/* ── Coloured badge overrides (regulation / attack / etc.) ──── */
+html:not(.dark) .bg-indigo-900\/40  { background-color: #e0e7ff !important; }
+html:not(.dark) .text-indigo-300    { color: #3730a3 !important; }
+html:not(.dark) .border-indigo-700\/40 { border-color: #a5b4fc !important; }
+
+html:not(.dark) .bg-red-900\/40     { background-color: #fee2e2 !important; }
+html:not(.dark) .text-red-300       { color: #991b1b !important; }
+html:not(.dark) .border-red-700\/40 { border-color: #fca5a5 !important; }
+
+html:not(.dark) .bg-emerald-900\/40 { background-color: #d1fae5 !important; }
+html:not(.dark) .text-emerald-300   { color: #065f46 !important; }
+html:not(.dark) .border-emerald-700\/40 { border-color: #6ee7b7 !important; }
+
+html:not(.dark) .bg-amber-900\/40   { background-color: #fef3c7 !important; }
+html:not(.dark) .text-amber-300     { color: #92400e !important; }
+html:not(.dark) .border-amber-700\/40 { border-color: #fcd34d !important; }
+
+html:not(.dark) .bg-purple-900\/40  { background-color: #ede9fe !important; }
+html:not(.dark) .text-purple-300    { color: #5b21b6 !important; }
+html:not(.dark) .border-purple-700\/40 { border-color: #c4b5fd !important; }
+
+html:not(.dark) .bg-rose-900\/40    { background-color: #ffe4e6 !important; }
+html:not(.dark) .text-rose-300      { color: #9f1239 !important; }
+html:not(.dark) .border-rose-700\/40 { border-color: #fda4af !important; }
+
+html:not(.dark) .bg-blue-900\/40    { background-color: #dbeafe !important; }
+html:not(.dark) .bg-blue-900\/60    { background-color: #dbeafe !important; }
+html:not(.dark) .text-blue-300      { color: #1e3a8a !important; }
+html:not(.dark) .border-blue-700\/40 { border-color: #93c5fd !important; }
