@@ -18,15 +18,16 @@ const DASHBOARD_TIPS = [
 ]
 
 const ALL_PAGES = [
-  { page: '/', label: 'Overview', emoji: '🏠' },
-  { page: '/module/1', label: 'Module 1', emoji: '📖' },
-  { page: '/module/2', label: 'Module 2', emoji: '🔍' },
-  { page: '/module/3', label: 'Module 3', emoji: '📊' },
-  { page: '/module/4', label: 'Module 4', emoji: '🛡️' },
-  { page: '/module/5', label: 'Module 5', emoji: '📋' },
-  { page: '/quiz', label: 'Quiz', emoji: '🧠' },
-  { page: '/game', label: 'Game', emoji: '🎮' },
-  { page: '/glossary', label: 'Glossary', emoji: '📚' },
+  { page: '/',        label: 'Overview',     emoji: '🏠' },
+  { page: '/module/1', label: 'Module 1',    emoji: '📖' },
+  { page: '/module/2', label: 'Module 2',    emoji: '🔍' },
+  { page: '/module/3', label: 'Module 3',    emoji: '📊' },
+  { page: '/module/4', label: 'Module 4',    emoji: '🛡️' },
+  { page: '/module/5', label: 'Module 5',    emoji: '📋' },
+  { page: '/quiz',     label: 'Quiz',        emoji: '🧠' },
+  { page: '/game',     label: 'Game',        emoji: '🎮' },
+  { page: '/glossary', label: 'Glossary',    emoji: '📚' },
+  { page: '/live',     label: 'Live Threats', emoji: '🔴' },
 ]
 
 interface ProgressData {

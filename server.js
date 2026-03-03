@@ -10,6 +10,7 @@ const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const Database = require('better-sqlite3');
 const cors     = require('cors');
+const https    = require('https');
 
 // ─── Config ────────────────────────────────────────────────
 const PORT       = process.env.PORT || 3000;
@@ -324,6 +325,46 @@ app.post('/api/admin/seed', requireAuth, (req, res) => {
     JWT_SECRET, { expiresIn: JWT_EXPIRY }
   );
   res.json({ ok: true, message: 'You are now admin. Please log out and log back in.', token });
+});
+
+// ─── Live Threat Intelligence (CISA KEV proxy) ────────────────
+// Browser can't fetch CISA directly (CORS), so we proxy + cache server-side.
+let _cisaCache = null;
+let _cisaTs    = 0;
+
+function fetchHttps(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, { headers: { 'User-Agent': 'FinTech-Security-Training/1.0' } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        return fetchHttps(res.headers.location).then(resolve).catch(reject);
+      }
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => {
+        try { resolve(JSON.parse(raw)); }
+        catch (e) { reject(new Error('JSON parse error')); }
+      });
+    }).on('error', reject);
+  });
+}
+
+app.get('/api/live/cisa', async (req, res) => {
+  const CACHE_MS = 10 * 60 * 1000; // 10-minute cache
+  if (_cisaCache && Date.now() - _cisaTs < CACHE_MS) {
+    return res.json(_cisaCache);
+  }
+  try {
+    const data = await fetchHttps(
+      'https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json'
+    );
+    _cisaCache = data;
+    _cisaTs    = Date.now();
+    res.json(data);
+  } catch (e) {
+    // If live fetch fails but we have stale cache, return that
+    if (_cisaCache) return res.json(_cisaCache);
+    res.status(502).json({ error: 'Failed to fetch CISA data', message: e.message });
+  }
 });
 
 // ─── Catch-all: serve React SPA index.html ────────────────

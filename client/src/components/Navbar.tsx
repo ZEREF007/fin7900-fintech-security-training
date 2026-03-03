@@ -14,12 +14,13 @@ const MODULE_ITEMS = [
   { path: '/module/5', label: 'Module 5: Case Studies and Governance',   icon: '📋', color: 'text-purple-600 dark:text-purple-400' },
 ]
 
-const NAV_ITEMS = [
+const NAV_ITEMS: { path: string; label: string; icon: string; live?: boolean }[] = [
   { path: '/',           label: 'Overview',   icon: '🏠' },
   { path: '/quiz',       label: 'MCQ Quiz',   icon: '🧠' },
   { path: '/game',       label: 'Game',       icon: '🎮' },
   { path: '/glossary',   label: 'Glossary',   icon: '📚' },
   { path: '/laws',       label: 'Laws',       icon: '⚖️' },
+  { path: '/live',       label: 'Live Threats', icon: '🔴', live: true },
   { path: '/dashboard',  label: 'Dashboard',  icon: '📈' },
   { path: '/references', label: 'References', icon: '📑' },
   { path: '/privacy',    label: 'Privacy',    icon: '🔏' },
@@ -162,6 +163,7 @@ export default function Navbar() {
                 <Link to={item.path} className={clsx(baseLinkCls, isActive(item.path) ? activeCls : idleCls)}>
                   <span className="text-sm">{item.icon}</span>
                   <span>{item.label}</span>
+                  {item.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
                 </Link>
               </li>
             ))}
@@ -275,8 +277,7 @@ export default function Navbar() {
                       )}
                     >
                       <span>{item.icon}</span>
-                      <span>{item.label}</span>
-                    </Link>
+                      <span>{item.label}</span>                      {item.live && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse ml-auto" />}                    </Link>
                   </li>
                 ))}
               </ul>

@@ -105,9 +105,9 @@ export default function ModulePage() {
         <p className="section-sub">After completing this module, you will be able to:</p>
         <div className="grid sm:grid-cols-2 gap-2">
           {mod.objectives.map((obj, i) => (
-            <div key={i} className="flex items-start gap-2.5 p-3 bg-slate-800/40 rounded-xl border border-slate-700/30">
-              <CheckCircle className="w-4 h-4 text-emerald-400 mt-0.5 shrink-0" />
-              <span className="text-slate-300 text-sm">{obj}</span>
+            <div key={i} className="flex items-start gap-2.5 p-3 bg-slate-100 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/30">
+              <CheckCircle className="w-4 h-4 text-emerald-500 dark:text-emerald-400 mt-0.5 shrink-0" />
+              <span className="text-slate-800 dark:text-slate-200 text-sm font-medium">{obj}</span>
             </div>
           ))}
         </div>
@@ -136,14 +136,14 @@ export default function ModulePage() {
         <h2 className="section-title">🎬 Module Video</h2>
         <p className="section-sub">Watch the expert walkthrough for this module.</p>
         <div
-          className="rounded-2xl overflow-hidden border border-slate-700/50 bg-slate-900/60 flex items-center justify-center"
+          className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/50 bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center"
           style={{ aspectRatio: '16/9' }}
           id={`${mod.id}VideoWrap`}
         >
-          <div className="text-center text-slate-500">
+          <div className="text-center text-slate-500 dark:text-slate-500">
             <div className="text-5xl mb-3">🎬</div>
-            <p className="text-sm font-medium">Module {mod.number} — {mod.title}</p>
-            <p className="text-xs mt-1">Video coming soon</p>
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-400">Module {mod.number} — {mod.title}</p>
+            <p className="text-xs mt-1 text-slate-500 dark:text-slate-500">Video coming soon</p>
           </div>
         </div>
       </motion.section>
@@ -155,15 +155,15 @@ export default function ModulePage() {
         viewport={{ once: true }}
         className="mb-10"
       >
-        <div className="rounded-2xl bg-gradient-to-br from-brand-950/60 to-accent-900/30 border border-brand-700/30 p-8">
-          <h2 className="text-xl font-bold text-white mb-5">🔑 Key Takeaways</h2>
+        <div className="rounded-2xl bg-gradient-to-br from-brand-50 to-indigo-50 dark:from-brand-950/60 dark:to-accent-900/30 border border-brand-200 dark:border-brand-700/30 p-8">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-5">🔑 Key Takeaways</h2>
           <ul className="space-y-3">
             {mod.keyTakeaways.map((t, i) => (
               <li key={i} className="flex items-start gap-3">
-                <span className="w-6 h-6 rounded-full bg-brand-700/50 text-brand-300 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-6 h-6 rounded-full bg-brand-600 dark:bg-brand-700/50 text-white dark:text-brand-300 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                   {i + 1}
                 </span>
-                <span className="text-slate-300 text-sm leading-relaxed">{t}</span>
+                <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{t}</span>
               </li>
             ))}
           </ul>
@@ -181,17 +181,17 @@ export default function ModulePage() {
         {prevMod ? (
           <Link
             to={`/module/${prevMod.number}`}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all text-sm font-medium"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700/50 transition-all text-sm font-medium"
           >
             <ChevronLeft className="w-4 h-4" />
             <div className="text-left hidden sm:block">
-              <div className="text-slate-400 text-xs">Previous</div>
+              <div className="text-slate-500 dark:text-slate-400 text-xs">Previous</div>
               <div>Module {prevMod.number}: {prevMod.title}</div>
             </div>
             <span className="sm:hidden">Previous</span>
           </Link>
         ) : (
-          <Link to="/" className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl transition-all text-sm">
+          <Link to="/" className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700/50 transition-all text-sm">
             <ChevronLeft className="w-4 h-4" /> Overview
           </Link>
         )}

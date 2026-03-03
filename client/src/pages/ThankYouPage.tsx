@@ -1,7 +1,44 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Trophy, BookOpen, Brain, BarChart2, ArrowRight, Star } from 'lucide-react'
+import { Trophy, BookOpen, Brain, BarChart2, ArrowRight, Star, GraduationCap, Heart } from 'lucide-react'
 import QuickTips from '../components/QuickTips'
+
+// ── Confetti piece ──────────────────────────────────────────
+const COLORS = ['#6366f1','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#3b82f6','#f97316']
+const PIECES = Array.from({ length: 60 }, (_, i) => ({
+  id: i,
+  x: Math.random() * 100,
+  delay: Math.random() * 3,
+  duration: 2.5 + Math.random() * 3,
+  size: 6 + Math.random() * 8,
+  color: COLORS[Math.floor(Math.random() * COLORS.length)],
+  rotate: Math.random() * 360,
+  shape: Math.random() > 0.5 ? 'rounded-sm' : 'rounded-full',
+}))
+
+function Confetti() {
+  return (
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+      {PIECES.map(p => (
+        <motion.div
+          key={p.id}
+          className={p.shape}
+          style={{
+            position: 'absolute',
+            left: `${p.x}%`,
+            top: -20,
+            width: p.size,
+            height: p.size * (Math.random() > 0.5 ? 1 : 0.5),
+            background: p.color,
+            rotate: p.rotate,
+          }}
+          animate={{ y: typeof window !== 'undefined' ? window.innerHeight + 100 : 900, rotate: p.rotate + 360 * 3 }}
+          transition={{ delay: p.delay, duration: p.duration, ease: 'linear', repeat: 1, repeatDelay: 1 }}
+        />
+      ))}
+    </div>
+  )
+}
 
 const modules = [
   { num: 1, title: 'What is a Data Breach?', icon: '📖', color: 'from-blue-600 to-indigo-600' },
@@ -41,6 +78,7 @@ const THANKYOU_TIPS = [
 export default function ThankYouPage() {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center px-6 py-16 relative overflow-hidden">
+      <Confetti />
       {/* Background glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-brand-600/10 dark:bg-brand-600/10 rounded-full blur-3xl" />
@@ -132,6 +170,45 @@ export default function ThankYouPage() {
 
         {/* Quick Tips */}
         <QuickTips tips={THANKYOU_TIPS} title="Your Next Steps After Completing This Course" />
+
+        {/* Professor Thank You */}
+        <motion.div
+          variants={itemVariants}
+          className="mt-10 rounded-3xl border border-amber-200/60 dark:border-amber-700/30 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/30 dark:via-amber-950/20 dark:to-slate-900 p-8 text-center shadow-sm"
+        >
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+              <GraduationCap className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h3 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2">
+            A Special Thank You
+          </h3>
+          <p className="text-slate-700 dark:text-slate-300 leading-relaxed max-w-lg mx-auto">
+            A heartfelt thank you to{' '}
+            <span className="font-bold text-amber-600 dark:text-amber-400">Professor Emil</span>{' '}
+            for the opportunity to explore this topic and for the guidance throughout the course.
+            Your passion for FinTech security made this an incredibly worthwhile learning journey.
+          </p>
+          <div className="flex items-center justify-center gap-1.5 mt-4 text-amber-500">
+            {[0,1,2,3,4].map(i => (
+              <motion.div
+                key={i}
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ delay: i * 0.15, duration: 0.6, repeat: Infinity, repeatDelay: 3 }}
+              >
+                <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
+              </motion.div>
+            ))}
+          </div>
+          <motion.div
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 1.8, repeat: Infinity }}
+            className="inline-flex items-center gap-2 mt-4 text-sm font-semibold text-amber-600 dark:text-amber-400"
+          >
+            <Heart className="w-4 h-4 fill-current" /> Made with care for this course
+          </motion.div>
+        </motion.div>
 
         {/* Footer message */}
         <motion.div variants={itemVariants} className="text-center mt-8 text-slate-500 dark:text-slate-600 text-sm">

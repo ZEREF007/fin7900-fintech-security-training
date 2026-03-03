@@ -28,13 +28,15 @@ export default function SlideViewer({ slides, color = 'from-brand-600 to-accent-
 
   return (
     <div className="select-none">
-      <div className="relative h-[420px] bg-slate-800/50 border border-slate-700/50 rounded-2xl overflow-hidden">
+      {/* Slide box — grows to fit content, no internal scroll */}
+      <div className="relative bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden shadow-sm dark:shadow-none">
+
         {/* Slide number badge */}
         <div className={clsx('absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r', color)}>
           {String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
         </div>
 
-        {/* Slide content */}
+        {/* Slide content — full height, no scroll */}
         <AnimatePresence custom={direction} mode="wait" initial={false}>
           <motion.div
             key={current}
@@ -44,47 +46,50 @@ export default function SlideViewer({ slides, color = 'from-brand-600 to-accent-
             animate="center"
             exit="exit"
             transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="absolute inset-0 p-8 pt-14 overflow-y-auto"
+            className="px-8 pt-14 pb-6"
           >
-            <h2 className="text-xl font-bold text-white mb-4">{slides[current].title}</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 leading-snug">
+              {slides[current].title}
+            </h2>
             <div
-              className="text-slate-300 text-sm leading-relaxed space-y-2 prose-ul:space-y-1"
+              className="text-slate-700 dark:text-slate-200 text-[15px] leading-relaxed space-y-2 [&_strong]:text-slate-900 [&_strong]:dark:text-white [&_li]:text-slate-700 [&_li]:dark:text-slate-200"
               dangerouslySetInnerHTML={{ __html: slides[current].content }}
             />
           </motion.div>
         </AnimatePresence>
 
-        {/* Prev/next arrow buttons */}
-        <button
-          onClick={prev}
-          disabled={current === 0}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-slate-700/70 hover:bg-slate-600 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
-        <button
-          onClick={next}
-          disabled={current === slides.length - 1}
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-slate-700/70 hover:bg-slate-600 disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center text-white transition-all"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
-      </div>
-
-      {/* Dot indicators */}
-      <div className="flex items-center justify-center gap-2 mt-4">
-        {slides.map((_, i) => (
+        {/* Navigation bar pinned to bottom of card */}
+        <div className="flex items-center justify-between gap-4 px-6 py-4 border-t border-slate-200 dark:border-slate-700/40 bg-slate-50 dark:bg-slate-900/40">
           <button
-            key={i}
-            onClick={() => goTo(i)}
-            className={clsx(
-              'transition-all rounded-full',
-              i === current
-                ? `w-6 h-2 bg-brand-400`
-                : 'w-2 h-2 bg-slate-600 hover:bg-slate-500',
-            )}
-          />
-        ))}
+            onClick={prev}
+            disabled={current === 0}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700/70 dark:hover:bg-slate-600 disabled:opacity-25 disabled:cursor-not-allowed text-slate-700 dark:text-white text-sm font-medium transition-all"
+          >
+            <ChevronLeft className="w-4 h-4" /> Previous
+          </button>
+
+          {/* Dot indicators */}
+          <div className="flex items-center gap-1.5 flex-wrap justify-center">
+            {slides.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goTo(i)}
+                className={clsx(
+                  'transition-all rounded-full',
+                  i === current ? `w-5 h-2 bg-brand-500 dark:bg-brand-400` : 'w-2 h-2 bg-slate-300 dark:bg-slate-600 hover:bg-slate-400 dark:hover:bg-slate-500',
+                )}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={next}
+            disabled={current === slides.length - 1}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-slate-700/70 dark:hover:bg-slate-600 disabled:opacity-25 disabled:cursor-not-allowed text-slate-700 dark:text-white text-sm font-medium transition-all"
+          >
+            Next <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   )

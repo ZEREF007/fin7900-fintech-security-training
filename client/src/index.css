@@ -194,6 +194,24 @@ html:not(.dark) .hover\:bg-slate-800:hover     { background-color: #f1f5f9 !impo
 html:not(.dark) .hover\:bg-slate-700:hover     { background-color: #e2e8f0 !important; }
 html:not(.dark) .hover\:bg-slate-600:hover     { background-color: #cbd5e1 !important; }
 
+/* ── Slide viewer nav bar & uncovered opacity variants ───────── */
+html:not(.dark) .bg-slate-900\/40 { background-color: rgba(241,245,249,0.9) !important; }
+html:not(.dark) .bg-slate-900\/60 { background-color: rgba(248,250,252,0.95) !important; }
+html:not(.dark) .bg-slate-800\/40 { background-color: rgba(255,255,255,0.95) !important; }
+html:not(.dark) .bg-slate-700\/70 { background-color: #e2e8f0 !important; }
+html:not(.dark) .hover\:bg-slate-600:hover { background-color: #cbd5e1 !important; }
+
+/* ── Slide content inline HTML (strong, li, ul, p children) ──── */
+html:not(.dark) .text-slate-700 strong, html:not(.dark) .text-slate-700 b { color: #0f172a !important; }
+html:not(.dark) .text-slate-200 strong, html:not(.dark) .text-slate-200 b { color: #0f172a !important; }
+html:not(.dark) .text-slate-200 li, html:not(.dark) .text-slate-200 p    { color: #1e293b !important; }
+html:not(.dark) .text-slate-200 ul, html:not(.dark) .text-slate-200 ol   { color: #1e293b !important; }
+
+/* ── MCQ grade colours: keep vivid even in light ─────────────── */
+html:not(.dark) .text-emerald-400 { color: #059669 !important; }
+html:not(.dark) .text-amber-400   { color: #d97706 !important; }
+html:not(.dark) .text-red-400     { color: #dc2626 !important; }
+
 /* ── Shadow: subtler in light ────────────────────────────────── */
 html:not(.dark) .shadow-xl  { box-shadow: 0 4px 24px rgba(0,0,0,0.07) !important; }
 html:not(.dark) .shadow-2xl { box-shadow: 0 8px 32px rgba(0,0,0,0.09) !important; }

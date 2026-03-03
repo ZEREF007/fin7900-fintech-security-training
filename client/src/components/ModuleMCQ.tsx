@@ -55,15 +55,15 @@ export default function ModuleMCQ({ questions, moduleTitle }: Props) {
 
   if (!started) {
     return (
-      <div className="mt-16 rounded-3xl overflow-hidden border border-purple-700/30 bg-gradient-to-br from-purple-950/60 to-indigo-950/60 backdrop-blur-sm">
+      <div className="mt-16 rounded-3xl overflow-hidden border border-purple-200 dark:border-purple-700/30 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/60 dark:to-indigo-950/60 backdrop-blur-sm">
         <div className="p-8 flex flex-col sm:flex-row items-center gap-6">
-          <div className="w-16 h-16 rounded-2xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center shrink-0">
-            <Brain className="w-8 h-8 text-purple-400" />
+          <div className="w-16 h-16 rounded-2xl bg-purple-100 dark:bg-purple-600/20 border border-purple-300 dark:border-purple-500/30 flex items-center justify-center shrink-0">
+            <Brain className="w-8 h-8 text-purple-600 dark:text-purple-400" />
           </div>
           <div className="flex-1 text-center sm:text-left">
-            <h3 className="text-xl font-bold text-white mb-1">Did you grasp the content? Check it! 🧠</h3>
-            <p className="text-slate-400 text-sm mb-0">
-              {questions.length} questions on <strong className="text-purple-300">{moduleTitle}</strong> — test your understanding before moving on.
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-1">Did you grasp the content? Check it! 🧠</h3>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mb-0">
+              {questions.length} questions on <strong className="text-purple-700 dark:text-purple-300">{moduleTitle}</strong> — test your understanding before moving on.
             </p>
           </div>
           <motion.button
@@ -84,12 +84,12 @@ export default function ModuleMCQ({ questions, moduleTitle }: Props) {
     const grade = pct >= 80 ? 'Excellent!' : pct >= 60 ? 'Good effort!' : 'Keep practising!'
     const gradeColor = pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400'
     return (
-      <div className="mt-16 rounded-3xl overflow-hidden border border-purple-700/30 bg-gradient-to-br from-purple-950/60 to-indigo-950/60 p-8 text-center">
-        <Trophy className="w-14 h-14 text-yellow-400 mx-auto mb-4" />
-        <h3 className="text-2xl font-bold text-white mb-1">Quiz Complete!</h3>
+      <div className="mt-16 rounded-3xl overflow-hidden border border-purple-200 dark:border-purple-700/30 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/60 dark:to-indigo-950/60 p-8 text-center">
+        <Trophy className="w-14 h-14 text-yellow-500 dark:text-yellow-400 mx-auto mb-4" />
+        <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Quiz Complete!</h3>
         <p className={clsx('text-3xl font-black mb-1', gradeColor)}>{grade}</p>
-        <p className="text-slate-400 mb-6">
-          You scored <span className="text-white font-bold">{score}</span> / {questions.length}{' '}
+        <p className="text-slate-600 dark:text-slate-400 mb-6">
+          You scored <span className="text-slate-900 dark:text-white font-bold">{score}</span> / {questions.length}{' '}
           <span className={gradeColor}>({pct}%)</span>
         </p>
 
@@ -101,8 +101,8 @@ export default function ModuleMCQ({ questions, moduleTitle }: Props) {
               className={clsx(
                 'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold',
                 a === questions[i].correct
-                  ? 'bg-emerald-700/60 text-emerald-300 border border-emerald-500/40'
-                  : 'bg-red-800/60 text-red-300 border border-red-600/40',
+                  ? 'bg-emerald-100 dark:bg-emerald-700/60 text-emerald-700 dark:text-emerald-300 border border-emerald-400 dark:border-emerald-500/40'
+                  : 'bg-red-100 dark:bg-red-800/60 text-red-700 dark:text-red-300 border border-red-400 dark:border-red-600/40',
               )}
             >
               {i + 1}
@@ -123,18 +123,18 @@ export default function ModuleMCQ({ questions, moduleTitle }: Props) {
   const q = questions[current]
 
   return (
-    <div className="mt-16 rounded-3xl overflow-hidden border border-purple-700/30 bg-gradient-to-br from-purple-950/60 to-indigo-950/60 backdrop-blur-sm">
+    <div className="mt-16 rounded-3xl overflow-hidden border border-purple-200 dark:border-purple-700/30 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950/60 dark:to-indigo-950/60 backdrop-blur-sm">
       {/* Header bar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-purple-700/30">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-purple-200 dark:border-purple-700/30">
         <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-purple-400" />
-          <span className="text-purple-300 text-sm font-semibold">Knowledge Check</span>
+          <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <span className="text-purple-700 dark:text-purple-300 text-sm font-semibold">Knowledge Check</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-slate-400 text-xs">
+          <span className="text-slate-500 dark:text-slate-400 text-xs">
             Question {current + 1} of {questions.length}
           </span>
-          <div className="w-24 h-1.5 bg-slate-700 rounded-full overflow-hidden">
+          <div className="w-24 h-1.5 bg-purple-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-purple-500 rounded-full transition-all"
               style={{ width: `${((current + 1) / questions.length) * 100}%` }}
@@ -153,15 +153,15 @@ export default function ModuleMCQ({ questions, moduleTitle }: Props) {
           transition={{ duration: 0.25 }}
           className="p-6"
         >
-          <p className="text-white font-semibold text-base leading-relaxed mb-5">{q.question}</p>
+          <p className="text-slate-900 dark:text-white font-semibold text-base leading-relaxed mb-5">{q.question}</p>
 
           <div className="space-y-2.5">
             {q.options.map((opt, i) => {
-              let style = 'bg-slate-800/60 border-slate-700/50 text-slate-300 hover:border-purple-500/50 hover:bg-purple-950/30 cursor-pointer'
+              let style = 'bg-white dark:bg-slate-800/60 border-slate-300 dark:border-slate-700/50 text-slate-700 dark:text-slate-300 hover:border-purple-400 dark:hover:border-purple-500/50 hover:bg-purple-50 dark:hover:bg-purple-950/30 cursor-pointer'
               if (selected !== null) {
-                if (i === q.correct) style = 'bg-emerald-900/40 border-emerald-500/60 text-emerald-200 cursor-default'
-                else if (i === selected) style = 'bg-red-900/40 border-red-500/60 text-red-200 cursor-default'
-                else style = 'bg-slate-800/40 border-slate-700/30 text-slate-500 cursor-default'
+                if (i === q.correct) style = 'bg-emerald-50 dark:bg-emerald-900/40 border-emerald-400 dark:border-emerald-500/60 text-emerald-800 dark:text-emerald-200 cursor-default'
+                else if (i === selected) style = 'bg-red-50 dark:bg-red-900/40 border-red-400 dark:border-red-500/60 text-red-700 dark:text-red-200 cursor-default'
+                else style = 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/30 text-slate-400 dark:text-slate-500 cursor-default'
               }
               return (
                 <motion.button
@@ -194,8 +194,8 @@ export default function ModuleMCQ({ questions, moduleTitle }: Props) {
                 <div className={clsx(
                   'mt-4 p-4 rounded-xl border text-sm leading-relaxed',
                   isCorrect
-                    ? 'bg-emerald-950/50 border-emerald-700/40 text-emerald-200'
-                    : 'bg-blue-950/50 border-blue-700/40 text-blue-200',
+                    ? 'bg-emerald-50 dark:bg-emerald-950/50 border-emerald-300 dark:border-emerald-700/40 text-emerald-800 dark:text-emerald-200'
+                    : 'bg-blue-50 dark:bg-blue-950/50 border-blue-300 dark:border-blue-700/40 text-blue-800 dark:text-blue-200',
                 )}>
                   <p className="font-semibold mb-1">
                     {isCorrect ? '✅ Correct!' : `❌ Not quite — the correct answer is ${String.fromCharCode(65 + q.correct)}.`}
