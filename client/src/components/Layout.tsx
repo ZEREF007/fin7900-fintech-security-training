@@ -1,11 +1,13 @@
 import { Outlet, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import Navbar from './Navbar'
+import CustomCursor from './CustomCursor'
 
 export default function Layout() {
   const location = useLocation()
   return (
-    <div className="min-h-screen bg-slate-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
+      <CustomCursor />
       <Navbar />
       <AnimatePresence mode="wait">
         <motion.main
@@ -22,3 +24,4 @@ export default function Layout() {
     </div>
   )
 }
+

@@ -242,24 +242,24 @@ export default function LawsPage() {
   })
 
   const jColor: Record<string, string> = {
-    'Hong Kong': 'bg-rose-900/30 border-rose-700/40 text-rose-300',
-    'European Union': 'bg-blue-900/30 border-blue-700/40 text-blue-300',
-    'International': 'bg-amber-900/30 border-amber-700/40 text-amber-300',
+    'Hong Kong':     'bg-rose-100 border-rose-300 text-rose-700 dark:bg-rose-900/30 dark:border-rose-700/40 dark:text-rose-300',
+    'European Union': 'bg-blue-100 border-blue-300 text-blue-700 dark:bg-blue-900/30 dark:border-blue-700/40 dark:text-blue-300',
+    'International':  'bg-amber-100 border-amber-300 text-amber-700 dark:bg-amber-900/30 dark:border-amber-700/40 dark:text-amber-300',
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="min-h-screen bg-slate-950">
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Hero */}
-      <div className="bg-gradient-to-br from-slate-900 via-rose-950/20 to-slate-900 border-b border-slate-800/60">
+      <div className="bg-gradient-to-br from-white via-rose-50 to-slate-50 dark:from-slate-900 dark:via-rose-950/20 dark:to-slate-900 border-b border-slate-200 dark:border-slate-800/60">
         <div className="max-w-5xl mx-auto px-6 py-16">
           <div className="flex items-center gap-2 mb-4">
             <span className="badge badge-red">Regulatory Reference</span>
-            <span className="text-slate-400 text-sm">4 Jurisdictions · {LAWS.length}+ Regulations</span>
+            <span className="text-slate-500 dark:text-slate-400 text-sm">4 Jurisdictions · {LAWS.length}+ Regulations</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
-            ⚖️ Laws &amp; <span className="bg-gradient-to-r from-rose-400 to-orange-400 bg-clip-text text-transparent">Regulations</span>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">
+            ⚖️ Laws &amp; <span className="bg-gradient-to-r from-rose-500 to-orange-500 dark:from-rose-400 dark:to-orange-400 bg-clip-text text-transparent">Regulations</span>
           </h1>
-          <p className="text-slate-300 text-lg max-w-2xl leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-300 text-lg max-w-2xl leading-relaxed">
             The full set of cybersecurity, data privacy, and financial regulation laws applicable to FinTech mobile apps in Hong Kong and globally, with official source links.
           </p>
         </div>
@@ -275,19 +275,19 @@ export default function LawsPage() {
               placeholder="Search laws by name, abbreviation, keyword…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-slate-800/60 border border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-white placeholder:text-slate-500 text-sm focus:outline-none focus:border-brand-500/60 transition-all"
+              className="w-full bg-white dark:bg-slate-800/60 border border-slate-300 dark:border-slate-700/50 rounded-xl pl-10 pr-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 text-base focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20 transition-all shadow-sm dark:shadow-none"
             />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             {JURISDICTIONS.map(j => (
               <button
                 key={j}
                 onClick={() => setJurisdiction(j)}
                 className={clsx(
-                  'px-3 py-2 rounded-xl text-xs font-semibold border transition-all whitespace-nowrap',
+                  'px-4 py-2.5 rounded-xl text-sm font-semibold border transition-all whitespace-nowrap',
                   jurisdiction === j
-                    ? 'bg-brand-600 border-brand-500 text-white'
-                    : 'bg-slate-800/60 border-slate-700/50 text-slate-400 hover:text-white',
+                    ? 'bg-brand-600 border-brand-500 text-white shadow-md shadow-brand-600/20'
+                    : 'bg-white dark:bg-slate-800/60 border-slate-300 dark:border-slate-700/50 text-slate-700 dark:text-slate-400 hover:border-brand-400 hover:text-brand-600 dark:hover:text-white',
                 )}
               >
                 {j}
@@ -305,38 +305,45 @@ export default function LawsPage() {
                 key={law.abbr}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
+                whileHover={{ y: isOpen ? 0 : -2 }}
                 transition={{ delay: idx * 0.04 }}
-                className="bg-slate-900/60 border border-slate-700/50 rounded-2xl overflow-hidden"
+                className="bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden shadow-sm dark:shadow-none hover:shadow-md dark:hover:shadow-none hover:border-brand-300 dark:hover:border-slate-600 transition-all duration-200"
               >
                 <button
                   onClick={() => setExpanded(isOpen ? null : law.abbr)}
-                  className="w-full flex items-center gap-4 p-5 text-left hover:bg-slate-800/30 transition-colors"
+                  className="w-full flex items-center gap-4 px-5 py-4 text-left hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
                 >
-                  <span className="text-2xl shrink-0">{law.icon}</span>
+                  <span className="text-3xl shrink-0">{law.icon}</span>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white font-bold">{law.abbr}</span>
-                      <span className={clsx('text-[10px] font-semibold px-2 py-0.5 rounded-full border', jColor[law.jurisdiction])}>
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
+                      <span className="text-slate-900 dark:text-white font-bold text-base">{law.abbr}</span>
+                      <span className={clsx('text-xs font-semibold px-2.5 py-1 rounded-full border', jColor[law.jurisdiction])}>
                         {law.jurisdictionFlag} {law.jurisdiction}
                       </span>
                     </div>
-                    <div className="text-slate-400 text-xs truncate">{law.name}</div>
+                    <div className="text-slate-600 dark:text-slate-400 text-sm">{law.name}</div>
                   </div>
-                  {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400 shrink-0" /> : <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
+                  <div className={clsx(
+                    'w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-colors',
+                    isOpen ? 'bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500',
+                  )}>
+                    {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                  </div>
                 </button>
 
                 {isOpen && (
                   <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="px-5 pb-5 border-t border-slate-700/50"
+                    initial={{ opacity: 0, y: -6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                    className="px-5 pb-6 border-t border-slate-100 dark:border-slate-700/50"
                   >
-                    <p className="text-slate-300 text-sm leading-relaxed mt-4 mb-4">{law.desc}</p>
-                    <h3 className="text-white font-semibold text-xs uppercase tracking-widest mb-2">Key Requirements</h3>
-                    <ul className="space-y-1.5 mb-5">
+                    <p className="text-slate-700 dark:text-slate-300 text-base leading-relaxed mt-5 mb-5">{law.desc}</p>
+                    <h3 className="text-slate-900 dark:text-white font-semibold text-xs uppercase tracking-widest mb-3">Key Requirements</h3>
+                    <ul className="space-y-2.5 mb-6">
                       {law.keyFacts.map((fact, i) => (
-                        <li key={i} className="flex items-start gap-2 text-slate-400 text-xs">
-                          <span className="text-brand-400 mt-0.5">▸</span>
+                        <li key={i} className="flex items-start gap-3 text-slate-700 dark:text-slate-400 text-sm leading-relaxed">
+                          <span className="w-5 h-5 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{i + 1}</span>
                           <span>{fact}</span>
                         </li>
                       ))}
@@ -348,10 +355,10 @@ export default function LawsPage() {
                           href={link.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 btn-secondary text-xs py-2 px-4"
+                          className="inline-flex items-center gap-2 btn-secondary text-sm py-2 px-4"
                         >
                           {link.label}
-                          <ExternalLink className="w-3 h-3" />
+                          <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       ))}
                     </div>

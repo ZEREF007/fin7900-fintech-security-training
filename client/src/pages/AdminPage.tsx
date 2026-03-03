@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
-import { Users, BarChart2, Video, Save, Loader2, CheckCircle, Shield } from 'lucide-react'
+import { Users, BarChart2, Video, Save, Loader2, CheckCircle, Shield, Settings, TrendingUp, Copy, ExternalLink, CheckCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import clsx from 'clsx'
 
@@ -33,7 +33,23 @@ export default function AdminPage() {
   const [videoUrls, setVideoUrls] = useState<Record<string, string>>({})
   const [savingId, setSavingId] = useState<string | null>(null)
   const [savedId, setSavedId] = useState<string | null>(null)
-  const [tab, setTab] = useState<'stats' | 'videos' | 'users'>('stats')
+  const [tab, setTab] = useState<'stats' | 'videos' | 'users' | 'setup'>('stats')
+  const [copied, setCopied] = useState(false)
+
+  const GA_SNIPPET = `<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>`
+
+  const copyGA = () => {
+    navigator.clipboard.writeText(GA_SNIPPET)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   useEffect(() => {
     if (!user || user.role !== 'admin') { nav('/'); return }
@@ -81,22 +97,27 @@ export default function AdminPage() {
             </div>
           </div>
           {/* Tabs */}
-          <div className="flex gap-2 mt-6">
+          <div className="flex gap-2 mt-6 flex-wrap">
             {[
-              { id: 'stats', label: '📊 Analytics', icon: BarChart2 },
-              { id: 'videos', label: '🎥 Videos', icon: Video },
-              { id: 'users', label: '👥 Users', icon: Users },
+              { id: 'stats',  label: '📊 Analytics', icon: BarChart2 },
+              { id: 'videos', label: '🎥 Videos',    icon: Video },
+              { id: 'users',  label: '👥 Users',     icon: Users },
+              { id: 'setup',  label: '⚙️ Setup',     icon: Settings },
             ].map(t => (
-              <button
+              <motion.button
                 key={t.id}
-                onClick={() => setTab(t.id as 'stats' | 'videos' | 'users')}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => setTab(t.id as 'stats' | 'videos' | 'users' | 'setup')}
                 className={clsx(
                   'px-5 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                  tab === t.id ? 'bg-brand-600 text-white' : 'bg-slate-800/60 text-slate-400 hover:text-white',
+                  tab === t.id
+                    ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/30'
+                    : 'bg-slate-800/60 text-slate-400 hover:text-white hover:bg-slate-700/60',
                 )}
               >
                 {t.label}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -110,16 +131,22 @@ export default function AdminPage() {
             {/* KPI cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {stats && [
-                { label: 'Total Users', value: stats.totals.users, emoji: '👥', color: 'text-blue-400' },
-                { label: 'Page Visits', value: stats.totals.visits, emoji: '👁️', color: 'text-indigo-400' },
-                { label: 'Quiz Attempts', value: stats.totals.quizzes, emoji: '🧠', color: 'text-purple-400' },
-                { label: 'Game Attempts', value: stats.totals.games, emoji: '🎮', color: 'text-amber-400' },
+                { label: 'Total Users',   value: stats.totals.users,   emoji: '👥', color: 'text-blue-400',   bg: 'from-blue-600/10 to-blue-600/0' },
+                { label: 'Page Visits',   value: stats.totals.visits,  emoji: '👁️', color: 'text-indigo-400', bg: 'from-indigo-600/10 to-indigo-600/0' },
+                { label: 'Quiz Attempts', value: stats.totals.quizzes, emoji: '🧠', color: 'text-purple-400', bg: 'from-purple-600/10 to-purple-600/0' },
+                { label: 'Game Attempts', value: stats.totals.games,   emoji: '🎮', color: 'text-amber-400',  bg: 'from-amber-600/10 to-amber-600/0' },
               ].map((k, i) => (
-                <div key={i} className="card text-center">
-                  <div className="text-2xl mb-1">{k.emoji}</div>
-                  <div className={clsx('text-3xl font-extrabold', k.color)}>{k.value}</div>
-                  <div className="text-slate-400 text-xs mt-1">{k.label}</div>
-                </div>
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.08 }}
+                  className={`card text-center bg-gradient-to-b ${k.bg}`}
+                >
+                  <div className="text-3xl mb-2">{k.emoji}</div>
+                  <div className={clsx('text-4xl font-extrabold tabular-nums', k.color)}>{k.value}</div>
+                  <div className="text-slate-400 text-xs mt-1.5 font-medium">{k.label}</div>
+                </motion.div>
               ))}
             </div>
 
@@ -127,14 +154,21 @@ export default function AdminPage() {
             {stats && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {[
-                  { label: 'Quiz Pass Rate', value: `${stats.rates.passRate}%`, color: stats.rates.passRate >= 70 ? 'text-emerald-400' : 'text-amber-400' },
-                  { label: 'Average Quiz Score', value: `${stats.rates.avgQuizPct}%`, color: 'text-brand-400' },
-                  { label: 'Average Game Score', value: stats.rates.avgGameScore, color: 'text-purple-400' },
+                  { label: 'Quiz Pass Rate',     value: `${stats.rates.passRate}%`,    color: stats.rates.passRate >= 70 ? 'text-emerald-400' : 'text-amber-400', icon: '🏆' },
+                  { label: 'Average Quiz Score', value: `${stats.rates.avgQuizPct}%`,  color: 'text-brand-400', icon: '📊' },
+                  { label: 'Average Game Score', value: stats.rates.avgGameScore,      color: 'text-purple-400', icon: '🎮' },
                 ].map((r, i) => (
-                  <div key={i} className="card text-center">
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.3 + i * 0.08 }}
+                    className="card text-center"
+                  >
+                    <div className="text-2xl mb-2">{r.icon}</div>
                     <div className={clsx('text-4xl font-extrabold', r.color)}>{r.value}</div>
-                    <div className="text-slate-400 text-xs mt-2">{r.label}</div>
-                  </div>
+                    <div className="text-slate-400 text-xs mt-1.5 font-medium">{r.label}</div>
+                  </motion.div>
                 ))}
               </div>
             )}
@@ -257,6 +291,100 @@ export default function AdminPage() {
                 <Loader2 className="w-6 h-6 text-brand-400 animate-spin" />
               </div>
             )}
+          </div>
+        )}
+        {/* ── SETUP TAB ── */}
+        {tab === 'setup' && (
+          <div className="space-y-6">
+            {/* GA4 Setup */}
+            <div className="card">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-10 h-10 rounded-xl bg-orange-600/20 flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-5 h-5 text-orange-400" />
+                </div>
+                <div>
+                  <h2 className="text-white font-bold text-base">Google Analytics 4 (GA4)</h2>
+                  <p className="text-slate-400 text-xs">Track page views, user engagement, quiz completions and more</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Steps */}
+                {[
+                  { num: 1, title: 'Create a GA4 Property', body: 'Go to analytics.google.com → click Admin (gear icon) → Create Property. Choose Web, enter your site URL.' },
+                  { num: 2, title: 'Get your Measurement ID', body: 'In your property: Admin → Data Streams → click your web stream. Copy the Measurement ID — it looks like G-XXXXXXXXXX.' },
+                  { num: 3, title: 'Add the tracking script', body: 'Open client/index.html in this project. Find the commented-out Google Analytics block and uncomment it. Replace both G-XXXXXXXXXX values with your real Measurement ID.' },
+                  { num: 4, title: 'Rebuild and push', body: 'Run: cd client && npm run build  — then commit and push. GitHub Actions will deploy it to Render automatically.' },
+                ].map(step => (
+                  <div key={step.num} className="flex gap-4 p-4 bg-slate-800/40 rounded-xl border border-slate-700/30">
+                    <div className="w-7 h-7 rounded-full bg-brand-600 text-white text-xs font-bold flex items-center justify-center shrink-0">{step.num}</div>
+                    <div>
+                      <div className="text-white font-semibold text-sm mb-1">{step.title}</div>
+                      <div className="text-slate-400 text-sm leading-relaxed">{step.body}</div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Code snippet */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-slate-400 text-xs uppercase tracking-widest font-semibold">Snippet to paste in client/index.html</span>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                      onClick={copyGA}
+                      className={clsx('flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg font-semibold transition-all', copied ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-slate-300 hover:bg-slate-600')}
+                    >
+                      {copied ? <><CheckCheck className="w-3.5 h-3.5" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
+                    </motion.button>
+                  </div>
+                  <pre className="bg-slate-950 border border-slate-700/50 rounded-xl p-4 text-xs text-emerald-300 overflow-x-auto leading-relaxed font-mono whitespace-pre-wrap">
+{`<!-- Google Analytics 4 -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+</script>`}
+                  </pre>
+                </div>
+
+                <a
+                  href="https://analytics.google.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary inline-flex text-sm"
+                >
+                  <ExternalLink className="w-4 h-4" /> Open Google Analytics
+                </a>
+              </div>
+            </div>
+
+            {/* Render Deploy Hook */}
+            <div className="card">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-emerald-600/20 flex items-center justify-center shrink-0">
+                  <Settings className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-white font-bold text-base">Auto-Deploy Webhook (Render)</h2>
+                  <p className="text-slate-400 text-xs">Every push to GitHub triggers a live deploy automatically</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { num: 1, text: 'Deploy to Render (render.com → New → Web Service → connect your GitHub repo)' },
+                  { num: 2, text: 'In Render dashboard: Settings → Deploy Hook → copy the URL' },
+                  { num: 3, text: 'In GitHub: repo Settings → Secrets → New secret → name: RENDER_DEPLOY_HOOK_URL → paste the URL' },
+                  { num: 4, text: 'Done. Every git push now rebuilds and deploys your site automatically in ~2 minutes' },
+                ].map(s => (
+                  <div key={s.num} className="flex gap-3 text-sm text-slate-400">
+                    <span className="w-5 h-5 rounded-full bg-emerald-600/30 text-emerald-400 text-xs font-bold flex items-center justify-center shrink-0">{s.num}</span>
+                    {s.text}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>

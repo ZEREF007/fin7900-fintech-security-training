@@ -224,23 +224,15 @@ html:not(.dark) .divide-slate-800 > * + * { border-color: #f1f5f9 !important; }
 canvas { max-width: 100%; }
 
 /* =====================================================================
-   CUSTOM CURSOR
+   CUSTOM CURSOR — color token (JS component handles the actual cursor)
    ===================================================================== */
-* { cursor: default; }
-a,
-button,
-[role="button"],
-label,
-select,
-summary,
-[tabindex]:not([tabindex="-1"]) {
-  cursor: pointer;
+:root          { --cursor-color: #4158f5; }
+html.dark      { --cursor-color: #818cf8; }
+
+/* Hide native cursor everywhere (custom cursor component replaces it) */
+@media (pointer: fine) {
+  * { cursor: none !important; }
 }
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="search"],
-textarea { cursor: text; }
 
 /* =====================================================================
    EXTRA ANIMATIONS
@@ -262,11 +254,38 @@ textarea { cursor: text; }
   0%   { background-position: -200% center; }
   100% { background-position: 200% center; }
 }
-.animate-float       { animation: float 6s ease-in-out infinite; }
-.animate-pulse-glow  { animation: pulse-glow 2.5s ease-in-out infinite; }
-.animate-slide-up    { animation: slide-up 0.5s ease-out forwards; }
+@keyframes bounce-in {
+  0%   { opacity: 0; transform: scale(0.75); }
+  60%  { transform: scale(1.08); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes fade-slide-left {
+  0%   { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25%       { transform: rotate(-4deg); }
+  75%       { transform: rotate(4deg); }
+}
+.animate-float          { animation: float          6s ease-in-out infinite; }
+.animate-pulse-glow     { animation: pulse-glow     2.5s ease-in-out infinite; }
+.animate-slide-up       { animation: slide-up       0.5s ease-out forwards; }
+.animate-bounce-in      { animation: bounce-in      0.5s cubic-bezier(.17,.67,.52,1.2) forwards; }
+.animate-spin-slow      { animation: spin-slow      8s linear infinite; }
+.animate-fade-slide-left{ animation: fade-slide-left 0.4s ease-out forwards; }
+.animate-wiggle         { animation: wiggle         0.4s ease-in-out; }
 .btn-primary { animation: pulse-glow 3s ease-in-out infinite; }
 .btn-primary:hover { animation: none; }
+
+/* Hover lift on cards */
+.card { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s; }
+.card:hover { transform: translateY(-2px); }
+html:not(.dark) .card:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
 
 /* ── Inline-code / mono text ─────────────────────────────────── */
 html:not(.dark) .font-mono { color: #1e293b !important; }

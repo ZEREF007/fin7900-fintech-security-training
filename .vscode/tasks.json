@@ -108,6 +108,12 @@
 			"type": "shell",
 			"command": "cd client && npm run build",
 			"problemMatcher": []
+		},
+		{
+			"label": "Build laws+cursor+admin updates",
+			"type": "shell",
+			"command": "cd client && npm run build",
+			"problemMatcher": []
 		}
 	]
 }
