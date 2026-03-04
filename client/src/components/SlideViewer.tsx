@@ -44,8 +44,8 @@ export default function SlideViewer({ slides, color = 'from-brand-600 to-accent-
           {String(current + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
         </div>
 
-        {/* Slide content — fixed height with internal scroll */}
-        <div className="h-[380px] overflow-y-auto">
+        {/* Slide content — grows to fit content, no scroll */}
+        <div className="min-h-[480px]">
           <AnimatePresence custom={direction} mode="wait" initial={false}>
             <motion.div
               key={current}
@@ -57,11 +57,11 @@ export default function SlideViewer({ slides, color = 'from-brand-600 to-accent-
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className="px-8 pt-14 pb-6"
             >
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-4 leading-snug">
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-5 leading-snug">
                 {slides[current].title}
               </h2>
               <div
-                className="text-slate-700 dark:text-slate-200 text-[15px] leading-relaxed space-y-2 [&_strong]:text-slate-900 [&_strong]:dark:text-white [&_li]:text-slate-700 [&_li]:dark:text-slate-200"
+                className="text-slate-700 dark:text-slate-200 text-[17px] leading-relaxed space-y-3 [&_strong]:text-slate-900 [&_strong]:dark:text-white [&_li]:text-slate-700 [&_li]:dark:text-slate-200"
                 dangerouslySetInnerHTML={{ __html: slides[current].content }}
               />
             </motion.div>

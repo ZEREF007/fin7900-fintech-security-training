@@ -36,7 +36,7 @@ export default function Navbar() {
   const { user, logout }              = useAuth()
   const { isDark, toggle }            = useTheme()
   const location                      = useLocation()
-  const navRef                        = useRef<HTMLDivElement>(null)
+  const navRef                        = useRef<HTMLUListElement>(null)
 
   useEffect(() => {
     const onScroll = () => {
