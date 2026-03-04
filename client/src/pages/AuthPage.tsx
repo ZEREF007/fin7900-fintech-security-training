@@ -165,14 +165,7 @@ export default function AuthPage() {
     </div>
   ) : null
 
-  const OtpInput = () => (
-    <div>
-      <label className="block text-slate-400 text-xs font-medium mb-1.5">6-Digit Verification Code</label>
-      <input type="text" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,'').slice(0,6))}
-        required maxLength={6} placeholder="000000"
-        className={clsx(inputCls, 'text-center font-mono text-xl tracking-[0.4em]')} />
-    </div>
-  )
+
 
   return (
     <div className={clsx('auth-page-wrap bg-slate-950 min-h-[calc(100vh-3.5rem)] flex items-center justify-center px-4 py-12', isDark && 'dark')}>
@@ -335,7 +328,13 @@ export default function AuthPage() {
                   <p className="text-emerald-300 text-sm">Verification code sent to <strong>{pendingEmail}</strong></p>
                 </div>
                 <form onSubmit={submitOtp} className="space-y-4">
-                  <OtpInput />
+                  <div>
+                    <label className="block text-slate-400 text-xs font-medium mb-1.5">6-Digit Verification Code</label>
+                    <input type="text" inputMode="numeric" value={otp}
+                      onChange={e => setOtp(e.target.value.replace(/\D/g,'').slice(0,6))}
+                      required maxLength={6} placeholder="000000" autoFocus
+                      className={clsx(inputCls, 'text-center font-mono text-xl tracking-[0.4em]')} />
+                  </div>
                   {error && <div className="px-4 py-3 bg-red-950/60 border border-red-700/40 rounded-xl text-red-300 text-sm">{error}</div>}
                   <button type="submit" disabled={loading || otp.length !== 6}
                     className="w-full btn-primary justify-center py-3.5 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -395,7 +394,13 @@ export default function AuthPage() {
                   <p className="text-emerald-300 text-sm">Reset code sent to <strong>{pendingEmail}</strong></p>
                 </div>
                 <form onSubmit={submitReset} className="space-y-4">
-                  <OtpInput />
+                  <div>
+                    <label className="block text-slate-400 text-xs font-medium mb-1.5">6-Digit Verification Code</label>
+                    <input type="text" inputMode="numeric" value={otp}
+                      onChange={e => setOtp(e.target.value.replace(/\D/g,'').slice(0,6))}
+                      required maxLength={6} placeholder="000000" autoFocus
+                      className={clsx(inputCls, 'text-center font-mono text-xl tracking-[0.4em]')} />
+                  </div>
                   <div>
                     <label className="block text-slate-400 text-xs font-medium mb-1.5">New Password</label>
                     <div className="relative">
