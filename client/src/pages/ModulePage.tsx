@@ -191,7 +191,7 @@ export default function ModulePage() {
       >
         <h2 className="section-title">Video Overview</h2>
         <p className="section-sub">Watch a curated video summary of this module</p>
-        <div className="max-w-sm">
+        <div>
           <div
             className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/50 bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center"
             style={{ aspectRatio: '16/9' }}
