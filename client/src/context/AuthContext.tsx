@@ -14,6 +14,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   register: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>
   logout: () => void
+  completeLogin: (token: string, user: User) => void
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -70,8 +71,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('user')
   }
 
+  const completeLogin = (tok: string, u: User) => {
+    setToken(tok)
+    setUser(u)
+    localStorage.setItem('token', tok)
+    localStorage.setItem('user', JSON.stringify(u))
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, loading, login, register, logout, completeLogin }}>
       {children}
     </AuthContext.Provider>
   )

@@ -114,7 +114,7 @@ export default function ReferencesPage() {
             📑 Course <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">References</span>
           </h1>
           <p className="text-slate-300 text-lg max-w-2xl leading-relaxed">
-            Research sources and further reading for the FinTech Security Training programme. All references link to publicly available reports, regulatory documents, and industry publications.
+            Research sources and further reading for the GuardYourData programme. All references link to publicly available reports, regulatory documents, and industry publications.
           </p>
         </div>
       </div>

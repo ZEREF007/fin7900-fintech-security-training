@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Shield, Eye, EyeOff, CheckCircle, XCircle, Loader2, KeyRound, RotateCcw, ShieldCheck } from 'lucide-react'
+import { Shield, Eye, EyeOff, CheckCircle, XCircle, Loader2, KeyRound, RotateCcw, ShieldCheck, Mail } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import clsx from 'clsx'
 
@@ -14,7 +14,7 @@ const checks = [
   { label: 'Special character', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
 ]
 
-type Mode = 'login' | 'register' | 'forgot' | 'forgot-reset' | '2fa-verify'
+type Mode = 'login' | 'register' | 'forgot' | 'forgot-reset' | 'otp-verify'
 
 export default function AuthPage() {
   const [mode, setMode]            = useState<Mode>('login')
@@ -23,46 +23,52 @@ export default function AuthPage() {
   const [email, setEmail]          = useState('')
   const [password, setPassword]    = useState('')
   const [showPw, setShowPw]        = useState(false)
-  const [use2fa, setUse2fa]        = useState(false)
   const [otp, setOtp]              = useState('')
   const [demoCode, setDemoCode]    = useState('')
+  const [emailSent, setEmailSent]  = useState(false)
   const [newPassword, setNewPw]    = useState('')
   const [showNewPw, setShowNewPw]  = useState(false)
   const [pendingEmail, setPending] = useState('')
   const [loading, setLoading]      = useState(false)
   const [error, setError]          = useState('')
 
-  const { login, register } = useAuth()
+  const { register, completeLogin } = useAuth()
   const nav = useNavigate()
 
-  const resetState = (m: Mode) => { setMode(m); setError(''); setOtp(''); setDemoCode('') }
+  const resetState = (m: Mode) => { setMode(m); setError(''); setOtp(''); setDemoCode(''); setEmailSent(false) }
   const switchTab  = (t: 'login' | 'register') => { setTab(t); resetState(t); setName(''); setEmail(''); setPassword('') }
 
-  /* ─── Login / Register ─── */
-  const submitAuth = async (e: React.FormEvent) => {
+  /* ─── Step 1: verify credentials, send OTP ─── */
+  const submitLogin = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setLoading(true)
     try {
-      if (use2fa && tab === 'login') {
-        const r = await fetch(`${API}/auth/2fa/init`, {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password }),
-        })
-        const data = await r.json()
-        if (!r.ok) return setError(data.error || 'Something went wrong')
-        setDemoCode(data.demo_code || ''); setPending(email); setOtp('')
-        setMode('2fa-verify')
-      } else {
-        const res = tab === 'login' ? await login(email, password) : await register(name, email, password)
-        if (res.ok) {
-          const u = JSON.parse(localStorage.getItem('user') || '{}')
-          nav(u.role === 'admin' ? '/admin' : '/')
-        } else { setError(res.error ?? 'Something went wrong') }
-      }
+      const r = await fetch(`${API}/auth/2fa/init`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await r.json()
+      if (!r.ok) return setError(data.error || 'Invalid credentials')
+      setDemoCode(data.demo_code || '')
+      setEmailSent(!!data.email_sent)
+      setPending(email); setOtp('')
+      setMode('otp-verify')
     } finally { setLoading(false) }
   }
 
-  /* ─── 2FA verify ─── */
-  const submit2fa = async (e: React.FormEvent) => {
+  /* ─── Register ─── */
+  const submitRegister = async (e: React.FormEvent) => {
+    e.preventDefault(); setError(''); setLoading(true)
+    try {
+      const res = await register(name, email, password)
+      if (res.ok) {
+        const u = JSON.parse(localStorage.getItem('user') || '{}')
+        nav(u.role === 'admin' ? '/admin' : '/')
+      } else { setError(res.error ?? 'Something went wrong') }
+    } finally { setLoading(false) }
+  }
+
+  /* ─── Step 2: verify OTP ─── */
+  const submitOtp = async (e: React.FormEvent) => {
     e.preventDefault(); setError(''); setLoading(true)
     try {
       const r = await fetch(`${API}/auth/2fa/verify`, {
@@ -71,9 +77,22 @@ export default function AuthPage() {
       })
       const data = await r.json()
       if (!r.ok) return setError(data.error || 'Invalid code')
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      completeLogin(data.token, data.user)
       nav(data.user.role === 'admin' ? '/admin' : '/')
+    } finally { setLoading(false) }
+  }
+
+  /* ─── Resend OTP ─── */
+  const resendOtp = async () => {
+    setError(''); setLoading(true); setOtp('')
+    try {
+      const r = await fetch(`${API}/auth/2fa/init`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, password }),
+      })
+      const data = await r.json()
+      if (r.ok) { setDemoCode(data.demo_code || ''); setEmailSent(!!data.email_sent) }
+      else setError(data.error || 'Could not resend')
     } finally { setLoading(false) }
   }
 
@@ -87,7 +106,9 @@ export default function AuthPage() {
       })
       const data = await r.json()
       if (!r.ok) return setError(data.error || 'Something went wrong')
-      setDemoCode(data.demo_code || ''); setPending(email); setOtp(''); setNewPw('')
+      setDemoCode(data.demo_code || '')
+      setEmailSent(!!data.email_sent)
+      setPending(email); setOtp(''); setNewPw('')
       setMode('forgot-reset')
     } finally { setLoading(false) }
   }
@@ -102,8 +123,7 @@ export default function AuthPage() {
       })
       const data = await r.json()
       if (!r.ok) return setError(data.error || 'Something went wrong')
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
+      completeLogin(data.token, data.user)
       nav(data.user.role === 'admin' ? '/admin' : '/')
     } finally { setLoading(false) }
   }
@@ -116,14 +136,21 @@ export default function AuthPage() {
 
   const DemoCodeBox = ({ code }: { code: string }) => code ? (
     <div className="mb-4 px-4 py-3 bg-amber-950/50 border border-amber-500/30 rounded-xl">
-      <p className="text-amber-300 text-xs font-medium mb-1">📧 Demo Mode — code that would be emailed:</p>
+      <p className="text-amber-300 text-xs font-medium mb-1">📧 Demo mode — code that would be emailed:</p>
       <p className="text-amber-200 font-mono text-2xl font-black tracking-[0.4em] text-center py-1">{code}</p>
+    </div>
+  ) : null
+
+  const EmailSentBox = () => emailSent ? (
+    <div className="mb-4 px-4 py-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl flex items-center gap-2">
+      <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
+      <p className="text-emerald-300 text-sm">Verification code sent to <strong>{pendingEmail}</strong></p>
     </div>
   ) : null
 
   const OtpInput = () => (
     <div>
-      <label className="block text-slate-400 text-xs font-medium mb-1.5">6-Digit Code</label>
+      <label className="block text-slate-400 text-xs font-medium mb-1.5">6-Digit Verification Code</label>
       <input type="text" value={otp} onChange={e => setOtp(e.target.value.replace(/\D/g,'').slice(0,6))}
         required maxLength={6} placeholder="000000"
         className={clsx(inputCls, 'text-center font-mono text-xl tracking-[0.4em]')} />
@@ -140,7 +167,7 @@ export default function AuthPage() {
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div className="text-left">
-              <div className="text-white font-bold text-lg leading-none">FinTech Security</div>
+              <div className="text-white font-bold text-lg leading-none">Guard<span className="text-brand-400">YourData</span></div>
               <div className="text-brand-400 text-sm">Training Platform</div>
             </div>
           </Link>
@@ -150,9 +177,9 @@ export default function AuthPage() {
           className="bg-slate-900/60 backdrop-blur-xl border border-slate-700/50 rounded-3xl p-8 shadow-2xl shadow-black/40">
           <AnimatePresence mode="wait">
 
-            {/* ═══ LOGIN / REGISTER ═══ */}
-            {(mode === 'login' || mode === 'register') && (
-              <motion.div key="auth" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+            {/* ═══ LOGIN ═══ */}
+            {mode === 'login' && (
+              <motion.div key="login" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
                 <div className="flex bg-slate-800/60 rounded-xl p-1 mb-7">
                   {(['login', 'register'] as const).map(t => (
                     <button key={t} onClick={() => switchTab(t)}
@@ -163,14 +190,13 @@ export default function AuthPage() {
                   ))}
                 </div>
 
-                <form onSubmit={submitAuth} className="space-y-4">
-                  {tab === 'register' && (
-                    <div>
-                      <label className="block text-slate-400 text-xs font-medium mb-1.5">Full Name</label>
-                      <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="Your name" className={inputCls} />
-                    </div>
-                  )}
+                {/* Security notice */}
+                <div className="flex items-center gap-2 px-3 py-2 bg-brand-950/40 border border-brand-700/30 rounded-xl mb-5">
+                  <ShieldCheck className="w-4 h-4 text-brand-400 shrink-0" />
+                  <span className="text-brand-300 text-xs font-medium">Email verification required on every login</span>
+                </div>
 
+                <form onSubmit={submitLogin} className="space-y-4">
                   <div>
                     <label className="block text-slate-400 text-xs font-medium mb-1.5">Email Address</label>
                     <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@company.com" className={inputCls} />
@@ -179,23 +205,74 @@ export default function AuthPage() {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label className="text-slate-400 text-xs font-medium">Password</label>
-                      {tab === 'login' && (
-                        <button type="button" onClick={() => { setPending(email); resetState('forgot') }}
-                          className="text-brand-400 hover:text-brand-300 text-xs font-medium transition-colors">
-                          Forgot password?
-                        </button>
-                      )}
+                      <button type="button" onClick={() => { setPending(email); resetState('forgot') }}
+                        className="text-brand-400 hover:text-brand-300 text-xs font-medium transition-colors">
+                        Forgot password?
+                      </button>
                     </div>
                     <div className="relative">
                       <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
-                        placeholder={tab === 'register' ? 'Min 8 chars · Uppercase · Number · Special' : 'Your password'}
+                        placeholder="Your password"
                         className={clsx(inputCls, 'pr-11')} />
                       <button type="button" onClick={() => setShowPw(!showPw)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
                         {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    {tab === 'register' && password && (
+                  </div>
+
+                  {error && <div className="px-4 py-3 bg-red-950/60 border border-red-700/40 rounded-xl text-red-300 text-sm">{error}</div>}
+
+                  <button type="submit" disabled={loading}
+                    className="w-full btn-primary justify-center py-3.5 mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    {loading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending code...</>
+                      : <><Mail className="w-4 h-4" /> Continue — Send Code</>}
+                  </button>
+                </form>
+
+                <p className="text-center text-slate-500 text-xs mt-6">
+                  Don't have an account?{' '}
+                  <button onClick={() => { setTab('register'); resetState('register') }}
+                    className="text-brand-400 hover:text-brand-300 font-semibold transition-colors">
+                    Register here
+                  </button>
+                </p>
+              </motion.div>
+            )}
+
+            {/* ═══ REGISTER ═══ */}
+            {mode === 'register' && (
+              <motion.div key="register" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+                <div className="flex bg-slate-800/60 rounded-xl p-1 mb-7">
+                  {(['login', 'register'] as const).map(t => (
+                    <button key={t} onClick={() => switchTab(t)}
+                      className={clsx('flex-1 py-2 rounded-lg text-sm font-semibold transition-all',
+                        tab === t ? 'bg-brand-600 text-white shadow-lg' : 'text-slate-400 hover:text-white')}>
+                      {t === 'login' ? '🔑 Sign In' : '🆕 Register'}
+                    </button>
+                  ))}
+                </div>
+                <form onSubmit={submitRegister} className="space-y-4">
+                  <div>
+                    <label className="block text-slate-400 text-xs font-medium mb-1.5">Full Name</label>
+                    <input type="text" value={name} onChange={e => setName(e.target.value)} required placeholder="Your name" className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 text-xs font-medium mb-1.5">Email Address</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} required placeholder="you@company.com" className={inputCls} />
+                  </div>
+                  <div>
+                    <label className="block text-slate-400 text-xs font-medium mb-1.5">Password</label>
+                    <div className="relative">
+                      <input type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} required
+                        placeholder="Min 8 chars · Uppercase · Number · Special" className={clsx(inputCls, 'pr-11')} />
+                      <button type="button" onClick={() => setShowPw(!showPw)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors">
+                        {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    {password && (
                       <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-3 space-y-2">
                         <div className="flex gap-1.5">
                           {[0,1,2,3].map(i => <div key={i} className={clsx('h-1 flex-1 rounded-full transition-all', i < pwStrength ? strengthColor[pwStrength] : 'bg-slate-700')} />)}
@@ -212,53 +289,38 @@ export default function AuthPage() {
                       </motion.div>
                     )}
                   </div>
-
-                  {tab === 'login' && (
-                    <button type="button" onClick={() => setUse2fa(v => !v)}
-                      className={clsx('w-full flex items-center gap-2.5 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all',
-                        use2fa ? 'bg-brand-900/40 border-brand-500/50 text-brand-300' : 'bg-slate-800/40 border-slate-700/40 text-slate-400 hover:border-slate-600')}>
-                      <ShieldCheck className="w-4 h-4 flex-shrink-0" />
-                      <span className="flex-1 text-left">Two-factor authentication (2FA)</span>
-                      <div className={clsx('w-8 h-4 rounded-full transition-all relative flex-shrink-0', use2fa ? 'bg-brand-600' : 'bg-slate-700')}>
-                        <div className={clsx('absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all', use2fa ? 'left-4' : 'left-0.5')} />
-                      </div>
-                    </button>
-                  )}
-
                   {error && <div className="px-4 py-3 bg-red-950/60 border border-red-700/40 rounded-xl text-red-300 text-sm">{error}</div>}
-
                   <button type="submit" disabled={loading}
                     className="w-full btn-primary justify-center py-3.5 mt-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    {loading
-                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</>
-                      : tab === 'login'
-                        ? (use2fa ? <><ShieldCheck className="w-4 h-4" /> Sign In with 2FA</> : '🔑 Sign In')
-                        : '🚀 Create Account'}
+                    {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing...</> : '🚀 Create Account'}
                   </button>
                 </form>
-
                 <p className="text-center text-slate-500 text-xs mt-6">
-                  {tab === 'login' ? "Don't have an account? " : 'Already have an account? '}
-                  <button onClick={() => switchTab(tab === 'login' ? 'register' : 'login')}
+                  Already have an account?{' '}
+                  <button onClick={() => { setTab('login'); resetState('login') }}
                     className="text-brand-400 hover:text-brand-300 font-semibold transition-colors">
-                    {tab === 'login' ? 'Register here' : 'Sign in here'}
+                    Sign in here
                   </button>
                 </p>
               </motion.div>
             )}
 
-            {/* ═══ 2FA VERIFY ═══ */}
-            {mode === '2fa-verify' && (
-              <motion.div key="2fa" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
+            {/* ═══ OTP VERIFY ═══ */}
+            {mode === 'otp-verify' && (
+              <motion.div key="otp-verify" initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}>
                 <div className="text-center mb-6">
-                  <div className="w-14 h-14 rounded-2xl bg-brand-600/20 border border-brand-500/30 flex items-center justify-center mx-auto mb-4">
-                    <ShieldCheck className="w-7 h-7 text-brand-400" />
+                  <div className="w-16 h-16 rounded-2xl bg-brand-600/20 border border-brand-500/30 flex items-center justify-center mx-auto mb-4">
+                    <Mail className="w-8 h-8 text-brand-400" />
                   </div>
-                  <h2 className="text-white font-bold text-xl">Two-Factor Verification</h2>
-                  <p className="text-slate-400 text-sm mt-1">Code sent to <span className="text-brand-400">{pendingEmail}</span></p>
+                  <h2 className="text-white font-bold text-xl">Check Your Email</h2>
+                  <p className="text-slate-400 text-sm mt-1.5">
+                    A 6-digit code was sent to<br />
+                    <span className="text-brand-300 font-semibold">{pendingEmail}</span>
+                  </p>
                 </div>
+                <EmailSentBox />
                 <DemoCodeBox code={demoCode} />
-                <form onSubmit={submit2fa} className="space-y-4">
+                <form onSubmit={submitOtp} className="space-y-4">
                   <OtpInput />
                   {error && <div className="px-4 py-3 bg-red-950/60 border border-red-700/40 rounded-xl text-red-300 text-sm">{error}</div>}
                   <button type="submit" disabled={loading || otp.length !== 6}
@@ -266,7 +328,16 @@ export default function AuthPage() {
                     {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Verifying...</> : <><ShieldCheck className="w-4 h-4" /> Verify &amp; Sign In</>}
                   </button>
                 </form>
-                <button onClick={() => resetState('login')} className="w-full text-center text-slate-500 text-xs mt-4 hover:text-slate-400 transition-colors">← Back to sign in</button>
+                <div className="mt-5 text-center space-y-2">
+                  <button onClick={resendOtp} disabled={loading}
+                    className="text-brand-400 hover:text-brand-300 text-xs font-medium transition-colors disabled:opacity-50">
+                    Didn't receive it? Resend code
+                  </button>
+                  <br />
+                  <button onClick={() => resetState('login')} className="text-slate-500 hover:text-slate-400 text-xs transition-colors">
+                    ← Back to sign in
+                  </button>
+                </div>
               </motion.div>
             )}
 

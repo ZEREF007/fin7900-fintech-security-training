@@ -79,6 +79,15 @@ db.exec(`
     expires_at TEXT    NOT NULL,
     used       INTEGER NOT NULL DEFAULT 0
   );
+
+  CREATE TABLE IF NOT EXISTS translation_cache (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    source     TEXT    NOT NULL,
+    target     TEXT    NOT NULL,
+    result     TEXT    NOT NULL,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(source, target)
+  );
 `);
 
 // Add last_ip column if it doesn't exist yet (safe migration)
@@ -417,6 +426,50 @@ app.post('/api/admin/promote', requireAuth, (req, res) => {
   res.json({ ok: true });
 });
 
+// DELETE /api/admin/users/:id  — remove a non-admin user
+app.delete('/api/admin/users/:id', requireAuth, (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  const targetId = parseInt(req.params.id, 10);
+  if (!targetId || targetId === req.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
+  const target = db.prepare('SELECT role FROM users WHERE id = ?').get(targetId);
+  if (!target) return res.status(404).json({ error: 'User not found' });
+  if (target.role === 'admin') return res.status(403).json({ error: 'Cannot delete another admin' });
+  db.prepare('DELETE FROM users WHERE id = ?').run(targetId);
+  res.json({ ok: true });
+});
+
+// POST /api/admin/demote  — demote an admin back to learner
+app.post('/api/admin/demote', requireAuth, (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  const { userId } = req.body || {};
+  if (!userId) return res.status(400).json({ error: 'userId required' });
+  if (userId === req.user.id) return res.status(400).json({ error: 'Cannot demote yourself' });
+  db.prepare("UPDATE users SET role = 'learner' WHERE id = ?").run(userId);
+  res.json({ ok: true });
+});
+
+// GET /api/admin/export-csv  — download all users as CSV
+app.get('/api/admin/export-csv', requireAuth, (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  const users = db.prepare(`
+    SELECT u.id, u.name, u.email, u.role, u.created_at,
+           COALESCE(u.last_ip,'') as last_ip,
+           (SELECT COUNT(*) FROM page_visits WHERE user_id = u.id) as pages_visited,
+           (SELECT MAX(pct) FROM quiz_attempts WHERE user_id = u.id) as best_quiz_pct,
+           (SELECT COUNT(*) FROM quiz_attempts WHERE user_id = u.id) as quiz_attempts,
+           (SELECT MAX(score) FROM game_attempts WHERE user_id = u.id) as best_game_score
+    FROM users u ORDER BY u.created_at DESC
+  `).all();
+  const header = 'id,name,email,role,created_at,last_ip,pages_visited,best_quiz_pct,quiz_attempts,best_game_score';
+  const rows = users.map(u =>
+    [u.id, `"${u.name.replace(/"/g,'""')}"`, `"${u.email}"`, u.role, u.created_at,
+     u.last_ip, u.pages_visited, u.best_quiz_pct ?? '', u.quiz_attempts, u.best_game_score ?? ''].join(',')
+  );
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="users_export.csv"');
+  res.send([header, ...rows].join('\n'));
+});
+
 // POST /api/admin/seed  — make yourself admin (only works if you have no admins yet)
 app.post('/api/admin/seed', requireAuth, (req, res) => {
   const adminCount = db.prepare("SELECT COUNT(*) as c FROM users WHERE role='admin'").get().c;
@@ -467,6 +520,56 @@ app.get('/api/live/cisa', async (req, res) => {
     if (_cisaCache) return res.json(_cisaCache);
     res.status(502).json({ error: 'Failed to fetch CISA data', message: e.message });
   }
+});
+
+// ─── Translation API (MyMemory, free, no key) ─────────────────
+// Language code mapping from app lang to MyMemory langpair
+const LANG_MAP = { zh: 'zh-CN', es: 'es', ne: 'ne-NP' };
+
+// Helper: call MyMemory for a single text string
+function myMemoryTranslate(text, targetLang) {
+  return new Promise((resolve) => {
+    const langpair = `en|${LANG_MAP[targetLang] || targetLang}`;
+    const encoded  = encodeURIComponent(text.slice(0, 480)); // MyMemory 500 char limit
+    const url = `https://api.mymemory.translated.world/get?q=${encoded}&langpair=${langpair}`;
+    fetchHttps(url)
+      .then(data => {
+        const translated = data?.responseData?.translatedText;
+        resolve((translated && translated !== text) ? translated : text);
+      })
+      .catch(() => resolve(text)); // fallback: return original
+  });
+}
+
+// POST /api/translate  — translate an array of texts to a target language
+// Body: { texts: string[], targetLang: 'zh' | 'es' | 'ne' }
+// Returns: { results: string[] }
+app.post('/api/translate', async (req, res) => {
+  const { texts, targetLang } = req.body || {};
+  if (!Array.isArray(texts) || !targetLang || targetLang === 'en') {
+    return res.json({ results: texts || [] });
+  }
+
+  const results = [];
+  for (const text of texts) {
+    if (!text || !text.trim()) { results.push(text); continue; }
+    // Check cache first
+    const cacheKey = `${targetLang}:${text}`;
+    const cached = db.prepare('SELECT result FROM translation_cache WHERE source = ? AND target = ?').get(text, targetLang);
+    if (cached) {
+      results.push(cached.result);
+      continue;
+    }
+    // Call API
+    const translated = await myMemoryTranslate(text, targetLang);
+    // Store in cache
+    try {
+      db.prepare(`INSERT OR REPLACE INTO translation_cache (source, target, result) VALUES (?, ?, ?)`).run(text, targetLang, translated);
+    } catch (_) {}
+    results.push(translated);
+  }
+
+  res.json({ results });
 });
 
 // ─── Catch-all: serve React SPA index.html ────────────────

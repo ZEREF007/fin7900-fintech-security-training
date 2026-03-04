@@ -5,7 +5,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   RadialBarChart, RadialBar, Cell,
 } from 'recharts'
-import { Trophy, Zap, BookOpen, Target, TrendingUp, Calendar, LogIn } from 'lucide-react'
+import { Trophy, Zap, BookOpen, Target, TrendingUp, Calendar, LogIn, ChevronRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import clsx from 'clsx'
 import QuickTips from '../components/QuickTips'
@@ -57,8 +57,8 @@ export default function DashboardPage() {
       <div className="min-h-screen bg-slate-950 flex items-center justify-center px-6">
         <div className="text-center max-w-sm">
           <LogIn className="w-12 h-12 text-brand-400 mx-auto mb-4" />
-          <h2 className="text-white font-bold text-2xl mb-2">Sign in required</h2>
-          <p className="text-slate-400 text-sm mb-6">Create an account to track your progress across modules, quiz attempts, and game scores.</p>
+          <h2 className="text-white font-bold text-2xl mb-2">Sign in to track your progress</h2>
+          <p className="text-slate-400 text-base mb-6">Create an account to see your overall learning score, module completion, quiz history, and personalised next steps.</p>
           <Link to="/auth" className="btn-primary justify-center">Sign In / Register</Link>
         </div>
       </div>
@@ -97,6 +97,21 @@ export default function DashboardPage() {
   const gradeLabel = bestQuiz >= 90 ? 'Distinction' : bestQuiz >= 70 ? 'Credit' : bestQuiz >= 50 ? 'Pass' : bestQuiz > 0 ? 'Attempting' : '—'
   const gradeColor = bestQuiz >= 90 ? 'text-emerald-400' : bestQuiz >= 70 ? 'text-blue-400' : bestQuiz >= 50 ? 'text-amber-400' : 'text-slate-400'
 
+  // Overall progress score: modules 60% + best quiz 40%
+  const overallPct = Math.round((modulesVisited / 5) * 60 + (bestQuiz / 100) * 40)
+  const overallLabel =
+    overallPct >= 90 ? '🏆 Distinction' :
+    overallPct >= 70 ? '⭐ Credit' :
+    overallPct >= 50 ? '✅ Pass' :
+    overallPct > 0  ? '📚 In progress' : '🚀 Get started'
+
+  const nextStep =
+    modulesVisited < 5
+      ? { label: `Read Module ${modulesVisited + 1}`, to: `/module/${modulesVisited + 1}`, icon: '📖' }
+      : bestQuiz < 70
+        ? { label: 'Improve your quiz score', to: '/quiz', icon: '🧠' }
+        : { label: 'Browse the Glossary', to: '/glossary', icon: '📚' }
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="min-h-screen bg-slate-950">
       {/* Hero */}
@@ -111,8 +126,45 @@ export default function DashboardPage() {
               <div className="text-slate-400 text-xs">{user.email}</div>
             </div>
           </div>
-          <h1 className="text-3xl font-extrabold text-white mt-4 mb-1">My Learning Dashboard 📈</h1>
-          <p className="text-slate-400 text-sm">Track your progress across all modules, quizzes, and games.</p>
+          <h1 className="text-4xl font-extrabold text-white mt-4 mb-1">My Progress 📈</h1>
+          <p className="text-slate-300 text-lg">Track how much you have learnt — modules studied, quiz results, and activities completed.</p>
+
+          {/* Overall progress + next step */}
+          <div className="mt-6 flex flex-wrap gap-4 items-stretch">
+            {/* Score ring card */}
+            <div className="flex items-center gap-5 bg-white/5 border border-white/10 rounded-2xl px-6 py-5">
+              <div className="relative w-20 h-20 shrink-0">
+                <svg viewBox="0 0 36 36" className="w-20 h-20 -rotate-90">
+                  <circle cx="18" cy="18" r="15.9154" fill="none" stroke="#1e293b" strokeWidth="2.5" />
+                  <circle
+                    cx="18" cy="18" r="15.9154" fill="none" stroke="#6366f1" strokeWidth="2.5"
+                    strokeDasharray={`${overallPct} 100`} strokeLinecap="round"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-white font-extrabold text-sm">{overallPct}%</span>
+                </div>
+              </div>
+              <div>
+                <div className="text-slate-400 text-sm font-semibold uppercase tracking-wide mb-1">Overall Score</div>
+                <div className="text-white font-extrabold text-3xl leading-none">{overallPct}%</div>
+                <div className="text-brand-400 text-base font-semibold mt-1">{overallLabel}</div>
+                <div className="text-slate-500 text-xs mt-1">Modules 60 · Quiz 40</div>
+              </div>
+            </div>
+
+            {/* Next step CTA */}
+            <div className="flex items-center gap-4 bg-brand-600/20 border border-brand-500/30 rounded-2xl px-6 py-5 flex-1 min-w-[200px]">
+              <span className="text-4xl shrink-0">{nextStep.icon}</span>
+              <div>
+                <div className="text-slate-400 text-sm font-semibold uppercase tracking-wide mb-1">Suggested Next Step</div>
+                <div className="text-white font-bold text-xl leading-tight">{nextStep.label}</div>
+                <Link to={nextStep.to} className="inline-flex items-center gap-1 text-brand-400 hover:text-brand-300 text-base font-medium mt-2 transition-colors">
+                  Go there <ChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

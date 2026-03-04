@@ -58,6 +58,7 @@ export default function ModulePage() {
     )
   }
 
+  const tips    = MODULE_TIPS[num] ?? MODULE_TIPS[1]
   const prevMod = MODULES.find(m => m.number === num - 1)
   const nextMod = MODULES.find(m => m.number === num + 1)
 
@@ -81,7 +82,9 @@ export default function ModulePage() {
             {mod.icon} Module {mod.number} · {mod.duration}
           </div>
           <h1 className="text-3xl sm:text-4xl font-black text-white mb-2">{mod.title}</h1>
-          <p className="text-slate-300 text-base max-w-xl">{mod.subtitle}</p>
+          <p className="text-slate-300 text-base max-w-xl">
+            {mod.subtitle}
+          </p>
 
           {/* Key stats */}
           <div className="flex flex-wrap gap-4 mt-5">
@@ -103,15 +106,15 @@ export default function ModulePage() {
         </div>
       </motion.div>
 
-      {/* Learning objectives */}
+      {/* Learning objectives */
       <motion.section
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         className="mb-10"
       >
-        <h2 className="section-title">🎯 Learning Objectives</h2>
-        <p className="section-sub">After completing this module, you will be able to:</p>
+        <h2 className="section-title">Learning Objectives</h2>
+        <p className="section-sub">What you will understand and be able to apply after this module</p>
         <div className="grid sm:grid-cols-2 gap-2">
           {mod.objectives.map((obj, i) => (
             <motion.div
@@ -136,9 +139,12 @@ export default function ModulePage() {
         transition={{ delay: 0.15 }}
         className="mb-10"
       >
-        <h2 className="section-title">🎞 Slide Presentation</h2>
-        <p className="section-sub">Navigate through key concepts using the arrows or dots below.</p>
-        <SlideViewer slides={mod.slides} color={mod.color} />
+        <h2 className="section-title">Slide Deck</h2>
+        <p className="section-sub">Step through the key concepts at your own pace</p>
+        <SlideViewer
+          slides={mod.slides}
+          color={mod.color}
+        />
       </motion.section>
 
       {/* Video section */}
@@ -149,8 +155,8 @@ export default function ModulePage() {
         transition={{ delay: 0.05 }}
         className="mb-10"
       >
-        <h2 className="section-title">🎬 Module Video</h2>
-        <p className="section-sub">Watch the expert walkthrough for this module.</p>
+        <h2 className="section-title">Video Overview</h2>
+        <p className="section-sub">Watch a curated video summary of this module</p>
         <div
           className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/50 bg-slate-100 dark:bg-slate-900/60 flex items-center justify-center"
           style={{ aspectRatio: '16/9' }}
@@ -172,14 +178,14 @@ export default function ModulePage() {
         className="mb-10"
       >
         <div className="rounded-2xl bg-gradient-to-br from-brand-50 to-indigo-50 dark:from-brand-950/60 dark:to-accent-900/30 border border-brand-200 dark:border-brand-700/30 p-8">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-5">🔑 Key Takeaways</h2>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-5">Key Takeaways</h2>
           <ul className="space-y-3">
-            {mod.keyTakeaways.map((t, i) => (
+            {mod.keyTakeaways.map((item, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span className="w-6 h-6 rounded-full bg-brand-600 dark:bg-brand-700/50 text-white dark:text-brand-300 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                   {i + 1}
                 </span>
-                <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{t}</span>
+                <span className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">{item}</span>
               </li>
             ))}
           </ul>
@@ -190,7 +196,7 @@ export default function ModulePage() {
       <ModuleMCQ questions={mod.mcqs} moduleTitle={mod.title} />
 
       {/* Quick Tips */}
-      <QuickTips tips={MODULE_TIPS[num] ?? MODULE_TIPS[1]} />
+      <QuickTips tips={tips} />
 
       {/* Module navigation */}
       <div className="mt-12 flex items-center justify-between gap-4">

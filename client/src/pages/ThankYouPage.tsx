@@ -115,7 +115,7 @@ export default function ThankYouPage() {
             🎉 Course <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">Complete!</span>
           </h1>
           <p className="text-slate-600 dark:text-slate-300 text-xl leading-relaxed max-w-2xl mx-auto">
-            Congratulations on completing the <strong className="text-slate-900 dark:text-white">FinTech Security Training</strong> programme. You now have a solid understanding of data breach prevention and cybersecurity in FinTech.
+            Congratulations on completing the <strong className="text-slate-900 dark:text-white">GuardYourData</strong> programme. You now have a solid understanding of data breach prevention and cybersecurity in FinTech.
           </p>
         </motion.div>
 
@@ -161,7 +161,7 @@ export default function ThankYouPage() {
             <Brain className="w-5 h-5" /> Take the Final Quiz
           </Link>
           <Link to="/dashboard" className="btn-secondary justify-center py-4 text-base">
-            <BarChart2 className="w-5 h-5" /> View My Dashboard
+            <BarChart2 className="w-5 h-5" /> My Progress
           </Link>
           <Link to="/glossary" className="btn-secondary justify-center py-4 text-base">
             <BookOpen className="w-5 h-5" /> Browse Glossary
@@ -188,7 +188,7 @@ export default function ThankYouPage() {
             A heartfelt thank you to{' '}
             <span className="font-bold text-amber-600 dark:text-amber-400">Professor Emil</span>{' '}
             for the opportunity to explore this topic and for the guidance throughout the course.
-            Your passion for FinTech security made this an incredibly worthwhile learning journey.
+            Your passion for cybersecurity and FinTech made this an incredibly worthwhile learning journey.
           </p>
           <div className="flex items-center justify-center gap-1.5 mt-4 text-amber-500">
             {[0,1,2,3,4].map(i => (
@@ -212,7 +212,7 @@ export default function ThankYouPage() {
 
         {/* Footer message */}
         <motion.div variants={itemVariants} className="text-center mt-8 text-slate-500 dark:text-slate-600 text-sm">
-          <p className="mt-1">FinTech Security Training Platform</p>
+          <p className="mt-1">GuardYourData Training Platform</p>
           <p className="mt-1 text-xs text-slate-400 dark:text-slate-700">This platform originated as an academic project and has since grown into a standalone professional learning resource.</p>
         </motion.div>
       </motion.div>
