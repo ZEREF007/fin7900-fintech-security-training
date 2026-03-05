@@ -140,16 +140,14 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         className="mb-16 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/50 shadow-xl dark:shadow-black/30"
-        style={{ aspectRatio: '16/9', background: '#000' }}
+        style={{ aspectRatio: '16/9', background: '#0f0c3c' }}
       >
-        <video
-          src="/videos/Intro_GuardYourData.mp4"
-          className="w-full h-full object-contain"
-          controls
-          autoPlay
-          muted
-          loop
-          playsInline
+        <iframe
+          src="https://www.youtube.com/embed/_NDoHJsOKMY?rel=0&modestbranding=1"
+          className="w-full h-full"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title="GuardYourData — Introduction"
         />
       </motion.div>
 

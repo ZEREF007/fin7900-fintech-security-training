@@ -38,6 +38,9 @@ __pycache__/
 # Assignment brief (local only)
 extra/
 
+# Local video files (served via YouTube instead)
+Videos/
+
 # Logs
 *.log
 npm-debug.log*
