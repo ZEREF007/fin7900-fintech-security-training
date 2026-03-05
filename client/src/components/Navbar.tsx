@@ -29,6 +29,8 @@ const RESOURCE_ITEMS = [
 
 type DropdownId = 'modules' | 'practice' | 'resources' | null
 
+const SUMMARY_PATH = '/summary'
+
 export default function Navbar() {
   const [mobileOpen, setMobileOpen]   = useState(false)
   const [openMenu, setOpenMenu]       = useState<DropdownId>(null)
@@ -65,6 +67,7 @@ export default function Navbar() {
   const isModuleActive   = MODULE_ITEMS.some(m => location.pathname === m.path)
   const isPracticeActive = PRACTICE_ITEMS.some(m => location.pathname.startsWith(m.path))
   const isResourceActive = RESOURCE_ITEMS.some(m => location.pathname.startsWith(m.path))
+  const isSummaryActive  = location.pathname === SUMMARY_PATH
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/'
@@ -192,6 +195,14 @@ export default function Navbar() {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </li>
+
+            {/* Summary */}
+            <li>
+              <Link to={SUMMARY_PATH} className={clsx(baseLinkCls, isSummaryActive ? activeCls : idleCls)}>
+                <span className="text-sm">📋</span>
+                <span>Summary</span>
+              </Link>
             </li>
 
             {/* Resources dropdown */}
@@ -347,8 +358,8 @@ export default function Navbar() {
               </ul>
             </div>
 
-            {/* Practice + Resources */}
-            <div className="grid grid-cols-2 divide-x divide-slate-100 dark:divide-slate-800">
+            {/* Practice + Summary + Resources */}
+            <div className="grid grid-cols-3 divide-x divide-slate-100 dark:divide-slate-800">
               <div className="p-3">
                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 mb-2">🎯 Practice</p>
                 <ul className="space-y-0.5">
@@ -378,6 +389,25 @@ export default function Navbar() {
                     >
                       <span>📈</span>
                       <span>My Progress</span>
+                    </Link>
+                  </li>
+                </ul>
+              </div>
+              {/* Summary column */}
+              <div className="p-3">
+                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 mb-2">📋 Summary</p>
+                <ul className="space-y-0.5">
+                  <li>
+                    <Link to={SUMMARY_PATH}
+                      className={clsx(
+                        'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all',
+                        isSummaryActive
+                          ? 'bg-brand-50 dark:bg-brand-600/20 text-brand-700 dark:text-brand-300'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800',
+                      )}
+                    >
+                      <span>📋</span>
+                      <span>Exec Summary</span>
                     </Link>
                   </li>
                 </ul>

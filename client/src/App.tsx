@@ -15,6 +15,7 @@ import GamePage from './pages/GamePage'
 import ThankYouPage from './pages/ThankYouPage'
 import FeedbackPage from './pages/FeedbackPage'
 import LivePage from './pages/LivePage'
+import SummaryPage from './pages/SummaryPage'
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/game" element={<GamePage />} />
             <Route path="/live" element={<LivePage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
+            <Route path="/summary" element={<SummaryPage />} />
             <Route path="/thankyou" element={<ThankYouPage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

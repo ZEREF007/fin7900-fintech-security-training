@@ -41,6 +41,8 @@ extra/
 # Local video files (served via YouTube instead)
 Videos/
 
+# Keep PPTX/ tracked so Render can serve it
+
 # Logs
 *.log
 npm-debug.log*

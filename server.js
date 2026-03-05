@@ -167,6 +167,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));  // serve React build
 app.use('/videos', express.static(path.join(__dirname, 'Videos')));  // serve local video files
+app.use('/pptx',   express.static(path.join(__dirname, 'PPTX')));    // serve PPTX slide decks
 
 // ─── JWT Middleware ──────────────────────────────────────────
 function requireAuth(req, res, next) {
