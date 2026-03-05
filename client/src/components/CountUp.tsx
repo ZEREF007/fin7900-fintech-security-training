@@ -20,9 +20,10 @@ function parse(raw: string) {
 
 export default function CountUp({ value, className = '', duration = 1800 }: Props) {
   const { prefix, number, suffix } = parse(value)
-  const [display, setDisplay] = useState(0)
+  const decimals = (value.match(/\.(\d+)/) ?? ['', ''])[1].length
+  const [display, setDisplay] = useState<number | null>(null)
   const ref = useRef<HTMLSpanElement>(null)
-  const inView = useInView(ref, { once: true, margin: '-40px' })
+  const inView = useInView(ref, { once: true, amount: 0.8 })
   const startedRef = useRef(false)
 
   useEffect(() => {
@@ -37,20 +38,18 @@ export default function CountUp({ value, className = '', duration = 1800 }: Prop
       const elapsed = now - startTime
       const progress = Math.min(elapsed / duration, 1)
       const current = number * ease(progress)
-      // Keep same decimal places as original
-      const decimals = (value.match(/\.(\d+)/) ?? ['', ''])[1].length
       setDisplay(parseFloat(current.toFixed(decimals)))
       if (progress < 1) requestAnimationFrame(tick)
     }
     requestAnimationFrame(tick)
-  }, [inView, number, duration, value])
+  }, [inView, number, duration, decimals])
 
-  const decimals = (value.match(/\.(\d+)/) ?? ['', ''])[1].length
-  const formatted = display.toFixed(decimals)
+  // Show nothing (blank) until scroll triggers, then count up
+  const formatted = display === null ? '\u00A0' : display.toFixed(decimals)
 
   return (
     <span ref={ref} className={className}>
-      {prefix}{formatted}{suffix}
+      {display === null ? '\u00A0' : `${prefix}${formatted}${suffix}`}
     </span>
   )
 }
