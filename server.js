@@ -143,11 +143,30 @@ try { db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFA
   }
 })();
 
+// ─── Startup: seed module video URLs from local files ────────
+(function seedVideoUrls() {
+  const videos = [
+    { module_id: 'overview', url: '/videos/Intro_GuardYourData.mp4' },
+    { module_id: 'module1',  url: '/videos/Module_1_What_is_Data_Breach_.mp4' },
+    { module_id: 'module2',  url: '/videos/Module_2_How_Hackers_Break_In.mp4' },
+    { module_id: 'module3',  url: '/videos/Module_3_The_True_Cost_of_a_Breach.mp4' },
+    { module_id: 'module4',  url: '/videos/MOdule_4_Building_a_Digital_Fortress.mp4' },
+    { module_id: 'module5',  url: '/videos/Module_5_A_Million-Dollar_Mistake.mp4' },
+  ];
+  const insert = db.prepare(`
+    INSERT INTO module_videos (module_id, url, updated_at) VALUES (?, ?, datetime('now'))
+    ON CONFLICT(module_id) DO NOTHING
+  `);
+  videos.forEach(v => insert.run(v.module_id, v.url));
+  console.log('  ✅  Video URLs seeded');
+})();
+
 // ─── Express Setup ───────────────────────────────────────────
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));  // serve React build
+app.use('/videos', express.static(path.join(__dirname, 'Videos')));  // serve local video files
 
 // ─── JWT Middleware ──────────────────────────────────────────
 function requireAuth(req, res, next) {

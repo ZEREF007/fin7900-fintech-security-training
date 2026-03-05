@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { ChevronRight, ChevronLeft, CheckCircle, BadgeCheck } from 'lucide-react'
 import { MODULES } from '../data/modules'
@@ -52,6 +52,15 @@ export default function ModulePage() {
   const [mcqScore, setMcqScore] = useState<{ score: number; total: number } | null>(null)
   const [manuallyCompleted, setManuallyCompleted] = useState(false)
   const completedRef = useRef(false)
+  const [videoUrl, setVideoUrl] = useState<string>('')
+
+  useEffect(() => {
+    if (!mod) return
+    fetch(`/api/videos/module${mod.number}`)
+      .then(r => r.json())
+      .then(d => { if (d.url) setVideoUrl(d.url) })
+      .catch(() => {})
+  }, [mod])
 
   const markComplete = (slideDone: boolean, mcq: { score: number; total: number } | null) => {
     if (!mod || !token || completedRef.current) return
@@ -197,11 +206,32 @@ export default function ModulePage() {
             style={{ aspectRatio: '16/9' }}
             id={`${mod.id}VideoWrap`}
           >
-            <div className="text-center text-slate-500 dark:text-slate-500">
-              <div className="text-3xl mb-2">🎬</div>
-              <p className="text-xs font-medium text-slate-700 dark:text-slate-400">Module {mod.number} — {mod.title}</p>
-              <p className="text-[11px] mt-1 text-slate-500 dark:text-slate-500">Video coming soon</p>
-            </div>
+            {videoUrl ? (
+              videoUrl.startsWith('/videos/') ? (
+                <video
+                  key={videoUrl}
+                  controls
+                  className="w-full h-full object-contain bg-black"
+                  preload="metadata"
+                >
+                  <source src={videoUrl} type="video/mp4" />
+                </video>
+              ) : (
+                <iframe
+                  src={videoUrl.includes('youtube.com/watch') ? videoUrl.replace('watch?v=', 'embed/') : videoUrl.includes('youtu.be/') ? videoUrl.replace('youtu.be/', 'www.youtube.com/embed/') : videoUrl}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  title={`Module ${mod.number} video`}
+                />
+              )
+            ) : (
+              <div className="text-center text-slate-500 dark:text-slate-500">
+                <div className="text-3xl mb-2">🎬</div>
+                <p className="text-xs font-medium text-slate-700 dark:text-slate-400">Module {mod.number} — {mod.title}</p>
+                <p className="text-[11px] mt-1 text-slate-500 dark:text-slate-500">Video coming soon</p>
+              </div>
+            )}
           </div>
         </div>
       </motion.section>

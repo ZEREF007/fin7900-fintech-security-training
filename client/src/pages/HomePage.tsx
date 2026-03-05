@@ -140,14 +140,16 @@ export default function HomePage() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
         className="mb-16 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/50 shadow-xl dark:shadow-black/30"
-        style={{ aspectRatio: '16/9', background: '#0f0c3c' }}
+        style={{ aspectRatio: '16/9', background: '#000' }}
       >
-        <iframe
-          src="https://www.youtube.com/embed/iBBK7T7NQHI?autoplay=1&mute=1&loop=1&playlist=iBBK7T7NQHI&rel=0&modestbranding=1"
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title="FinTech Security Overview"
+        <video
+          src="/videos/Intro_GuardYourData.mp4"
+          className="w-full h-full object-contain"
+          controls
+          autoPlay
+          muted
+          loop
+          playsInline
         />
       </motion.div>
 

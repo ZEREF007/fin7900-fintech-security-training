@@ -263,6 +263,13 @@
 			"command": "cd \"/Users/ace/Desktop/Individual Assignment FIN7900\" && git add -A && git status --short",
 			"isBackground": false,
 			"group": "build"
+		},
+		{
+			"label": "Git commit and push",
+			"type": "shell",
+			"command": "cd \"/Users/ace/Desktop/Individual Assignment FIN7900\" && git config user.email \"icyace007@gmail.com\" && git config user.name \"FIN7900\" && git commit -m \"Add 50 MCQs, Answers tab, Excel feedback export, superuser ace0404\" && git push origin main 2>&1",
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }
