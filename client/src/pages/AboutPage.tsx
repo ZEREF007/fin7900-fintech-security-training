@@ -125,20 +125,28 @@ export default function AboutPage() {
           </div>
           <div className="card space-y-4">
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
-              I'm a finance and technology student with a deep passion for the intersection
-              of FinTech and product development. I believe that technology should empower
-              people — not overwhelm them — and that real financial education should be
-              accessible, engaging, and practical.
+              Computer Science graduate currently pursuing an MSc in Finance at Hong Kong Baptist University,
+              specializing in Algorithmic and High Frequency Trading. Achieved a 4.0 CGPA and recipient of
+              the Hong Kong Future Talents Scholarship (HKD 100K).
             </p>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
-              My focus is on FinTech innovation: how digital payments, security platforms,
-              and data-driven tools are reshaping the financial services landscape. This
-              platform is a direct expression of that passion — built from scratch, from
-              UI design to backend APIs to cloud deployment.
+              I have experience on both the technology and finance side. I worked as a Financial Consultant
+              at AMG Financial Group and as a Data Engineer at CedarGate Technologies, building reporting
+              automation and data pipelines with Python, SQL, Excel, Airflow, PySpark, and Redshift.
             </p>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
-              I'm always looking for opportunities to bridge the gap between complex
-              financial technology concepts and real-world business impact.
+              I genuinely enjoy keeping track of global markets. I follow news and pricing daily using
+              Bloomberg Terminal, Reuters, and TradingView. I trade futures, crypto, and equities using
+              IBKR and have a strong interest in macro strategy, rates, and interest rate trading.
+            </p>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+              Outside work, I play poker and chess, and enjoy adventure sports.
+            </p>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+              I am actively looking for trader, dealer, or data roles supporting trading and global markets
+              teams. Happy to work day or night shifts. I thrive in high-intensity environments where I can
+              put in 80 to 90 hours a week, take on real responsibilities, and contribute meaningfully to
+              the team. I am also open to FinTech roles.
             </p>
             <a
               href="https://www.linkedin.com/in/acebhatt"
