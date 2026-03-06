@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion'
-import { ExternalLink, Heart, Shield, BookOpen, Target, Linkedin, Rocket, Star } from 'lucide-react'
-
-const RESUME_DOWNLOAD_URL = 'https://lifehkbueduhk-my.sharepoint.com/:b:/g/personal/25449745_life_hkbu_edu_hk/IQBgRkmLJ7qFQqLhFLuO4UqqAf1amA5rxjIBS3Qkoz1eRTE?e=XJD2eE'
+import { ExternalLink, Heart, Shield, BookOpen, Target, Linkedin, TrendingUp, Globe, CreditCard } from 'lucide-react'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -155,97 +153,47 @@ export default function AboutPage() {
           </div>
         </motion.div>
 
-        {/* Resume — Hire Me CTA */}
+        {/* Interests */}
         <motion.div
           custom={2}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
-          className="rounded-2xl overflow-hidden border border-amber-200 dark:border-amber-700/40 shadow-lg"
-        >
-          {/* Top accent bar */}
-          <div className="h-2 bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400" />
-          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 p-10 text-center">
-            <div className="text-6xl mb-4">🚀</div>
-            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-3">
-              Hire Me — Seriously.
-            </h2>
-            <p className="text-slate-600 dark:text-slate-300 text-lg max-w-xl mx-auto mb-2 leading-relaxed">
-              You've just seen what I can build. A full-stack FinTech learning platform —
-              React, Node.js, cloud-deployed, live data integrations — all designed in
-              one assignment.
-            </p>
-            <p className="text-slate-500 dark:text-slate-400 text-base max-w-lg mx-auto mb-8 leading-relaxed">
-              Imagine what I'll build with your team behind me.
-              <span className="text-amber-600 dark:text-amber-400 font-semibold"> Invest in my potential</span> — 
-              you won't regret it. ✨
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-4">
-              <a
-                href={RESUME_DOWNLOAD_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-amber-500/40 text-lg"
-              >
-                <Rocket className="w-5 h-5" />
-                Here's My Résumé →
-              </a>
-              <a
-                href="https://www.linkedin.com/in/acebhatt"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2.5 px-8 py-4 bg-[#0A66C2] hover:bg-[#0856a8] text-white font-bold rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-[#0A66C2]/40 text-lg"
-              >
-                <Linkedin className="w-5 h-5" />
-                Let's Talk on LinkedIn
-              </a>
-            </div>
-            <p className="text-slate-400 dark:text-slate-500 text-sm mt-6 flex items-center justify-center gap-1.5">
-              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-              Available for internships, part-time roles &amp; exciting FinTech opportunities
-            </p>
-          </div>
-        </motion.div>
-
-        {/* LinkedIn Activity */}
-        <motion.div
-          custom={2.5}
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
         >
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-[#0A66C2]/10 dark:bg-[#0A66C2]/20 flex items-center justify-center">
-              <Linkedin className="w-5 h-5 text-[#0A66C2]" />
+            <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/40 flex items-center justify-center">
+              <Target className="w-5 h-5 text-brand-600 dark:text-brand-400" />
             </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">My LinkedIn Activity</h2>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Interests</h2>
           </div>
-          <div className="card flex flex-col sm:flex-row items-center gap-6">
-            <div className="w-20 h-20 rounded-2xl bg-[#0A66C2] flex items-center justify-center shrink-0 text-white text-4xl font-extrabold shadow-lg">
-              A
+          <div className="grid sm:grid-cols-3 gap-5">
+            <div className="card flex flex-col items-center text-center gap-3 hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center">
+                <TrendingUp className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg">Sales &amp; Trading</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                Financial markets, trading strategies, derivatives, and the mechanics of price discovery.
+              </p>
             </div>
-            <div className="flex-1 text-center sm:text-left">
-              <p className="font-bold text-slate-900 dark:text-white text-xl mb-1">Ace Bhatt</p>
-              <p className="text-slate-500 dark:text-slate-400 text-base mb-4">
-                Finance &amp; Technology · FinTech Enthusiast · Builder
+            <div className="card flex flex-col items-center text-center gap-3 hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-xl bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center">
+                <Globe className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg">Web 3.0</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                Blockchain, decentralised finance, smart contracts, and the future of trustless infrastructure.
               </p>
-              <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed mb-5">
-                Follow me on LinkedIn to see my latest thoughts on FinTech, product
-                development, and what I'm building next. I share insights, project
-                updates, and connect with professionals across the industry.
+            </div>
+            <div className="card flex flex-col items-center text-center gap-3 hover:shadow-md transition-all">
+              <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg">FinTech</h3>
+              <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
+                Digital payments, neobanks, RegTech, and how technology is reshaping financial services.
               </p>
-              <a
-                href="https://www.linkedin.com/in/acebhatt"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-[#0A66C2] hover:bg-[#0856a8] text-white font-semibold rounded-xl transition-all text-base"
-              >
-                <Linkedin className="w-5 h-5" />
-                Follow &amp; See My Posts
-                <ExternalLink className="w-4 h-4 opacity-70" />
-              </a>
             </div>
           </div>
         </motion.div>
@@ -350,14 +298,15 @@ export default function AboutPage() {
           viewport={{ once: true }}
           className="card text-center bg-gradient-to-br from-brand-50 to-accent-50/30 dark:from-brand-950/30 dark:to-accent-950/20 border-brand-200/60 dark:border-brand-700/30"
         >
-          <div className="text-4xl mb-4">🤝</div>
+          <div className="text-4xl mb-4">💬</div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
-            Let's Connect
+            Get In Touch
           </h2>
-          <p className="text-slate-600 dark:text-slate-400 text-lg mb-6 max-w-xl mx-auto leading-relaxed">
-            Have feedback, questions, or just want to say hi? I'd love to hear from you.
-            Reach out on LinkedIn — I'm always happy to connect with fellow learners and
-            professionals.
+          <p className="text-slate-600 dark:text-slate-400 text-lg mb-2 max-w-xl mx-auto leading-relaxed">
+            Have any queries? Hit me up — I'm always happy to help.
+          </p>
+          <p className="text-slate-500 dark:text-slate-400 text-base mb-6 max-w-xl mx-auto leading-relaxed">
+            If you're a professional in the FinTech field — let's chat.
           </p>
           <a
             href="https://www.linkedin.com/in/acebhatt"
