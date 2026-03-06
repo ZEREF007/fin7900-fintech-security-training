@@ -121,9 +121,9 @@
     /* ── Article section ──────────────────────── */
     article {
       max-width: 800px; margin: 0 auto;
-      padding: 56px 44px 20px;
+      padding: 36px 44px 20px;
     }
-    article + article { padding-top: 36px; }
+    article + article { padding-top: 24px; }
 
     .sec-label {
       display: inline-block;
@@ -192,14 +192,12 @@
     table.rt td { padding: 11px 15px; border-bottom: 1px solid #e4eaf7; color: #25324a; vertical-align: top; }
     table.rt tr:nth-child(even) td { background: #f6f9ff; }
 
-    hr.PS { border: none; border-top: 1px dashed #cdd6e8; margin: 60px 0; }
+    hr.PS { border: none; border-top: 1px dashed #cdd6e8; margin: 28px 0; }
 
     /* References */
     .ref { font-size: 15px; color: #374151; margin-bottom: 12px; padding-left: 32px; text-indent: -32px; line-height: 1.75; font-family: 'Segoe UI', sans-serif; }
     .ref a { color: #1a55c6; text-decoration: none; }
     .ref a:hover { text-decoration: underline; }
-
-    .wc { display: inline-block; background: #f0fdf4; border: 1px solid #86efac; border-radius: 6px; padding: 3px 12px; font-size: 13px; color: #15803d; font-weight: 700; margin-bottom: 18px; font-family: 'Segoe UI', sans-serif; }
 
     footer {
       background: #0d1b3e; color: rgba(255,255,255,.45);
@@ -440,7 +438,6 @@
     <div class="sec-label blue">Section 3</div>
     <h2 class="st">Methodology &amp; Research Phase</h2>
     <div class="sec-rule" style="background:linear-gradient(90deg,#1a55c6,#93c5fd);"></div>
-    <span class="wc">&#10003; Approx. 600 words</span>
 
     <h3>3.1 Research Strategy and Source Selection</h3>
     <p>The research underpinning <em>GuardYourData</em> followed a structured three-phase methodology designed to ensure that all content was accurate, current, and credible for a professional managerial audience. Primary regulatory documents formed the authoritative core: the Personal Data (Privacy) Ordinance Cap.486 (PDPO), the HKMA Cybersecurity Fortification Initiative 2.0 (December 2021), the HKMA Supervisory Policy Manual TM-E-1 on e-Banking security controls, the Securities and Futures Commission Circular on Cybersecurity (2022), the Monetary Authority of Singapore Technology Risk Management Guidelines (2021), GDPR 2016/679, PCI DSS v4.0, the EU NIS2 Directive, and the Digital Operational Resilience Act (DORA). Each document was read in full, with structured summaries created for all five content domains.</p>
@@ -476,7 +473,6 @@
     <div class="sec-label purple">Section 4</div>
     <h2 class="st">Content Development</h2>
     <div class="sec-rule" style="background:linear-gradient(90deg,#7e22ce,#d8b4fe);"></div>
-    <span class="wc">&#10003; Approx. 550 words</span>
 
     <h3>4.1 Module Architecture and Curriculum Design</h3>
     <p>The content architecture was designed against two simultaneous constraints: the three-hour total duration specified in the assignment brief, and the pedagogical principle of graduated cognitive load — moving from definitional comprehension in Module 1 to analytical application in Modules 4 and 5. Each module was structured around a six-to-seven-slide narrative arc: an opening statistic making the threat vivid before any conceptual framework is introduced; establishment of the regulatory and conceptual context; the primary content; an explicit connection to the Hong Kong digital wallet operating environment; a worked example or case extract; and a closing section of six distilled key takeaways followed by ten practice MCQs with full explanations.</p>
@@ -503,7 +499,6 @@
     <div class="sec-label red">Section 5</div>
     <h2 class="st">Generative AI Integration</h2>
     <div class="sec-rule" style="background:linear-gradient(90deg,#b91c1c,#fca5a5);"></div>
-    <span class="wc">&#10003; Approx. 700 words</span>
 
     <h3>5.1 Platforms Utilised and Rationale</h3>
     <p>Three Generative AI platforms were deployed across the content development lifecycle, each assigned to tasks matching its relative strengths. <strong>Claude 3.5 Sonnet (Anthropic)</strong> served as the primary drafting assistant for long-form structured content: module slide text, MCQ question-and-explanation pairs, glossary definitions, laws card content, game scenario text, and all HTML/React/TypeScript code for the platform itself. Its ability to maintain consistent Deloitte-style register and produce accurately formatted technical prose made it the preferred tool where both precision and professional voice were required simultaneously. <strong>ChatGPT-4o (OpenAI)</strong> was used for ideation and variant generation: brainstorming MCQ distractor options, generating alternative regulatory phrasings, and producing initial outlines for Security Challenge scenarios. <strong>Google Gemini 1.5 Pro</strong> was used for cross-referencing and currency checking: its integration with live search enabled verification of whether specific regulatory provisions had been updated since primary sources were published.</p>
@@ -541,7 +536,6 @@
     <div class="sec-label teal">Section 6</div>
     <h2 class="st">User Testing &amp; Iterative Feedback</h2>
     <div class="sec-rule" style="background:linear-gradient(90deg,#0f766e,#5eead4);"></div>
-    <span class="wc">&#10003; Approx. 700 words</span>
 
     <h3>6.1 Testing Methodology</h3>
     <p>Three structured testing rounds were conducted across the content development lifecycle, each designed to surface a distinct category of quality issue. Rounds were sequenced so that findings could be implemented before the next round commenced, creating a genuine iterative improvement cycle. Feedback was collected through facilitator-observed walkthroughs with think-aloud protocol, a standardised feedback questionnaire combining quantitative ratings and open-ended responses, and individual post-session debrief conversations. Five volunteer participants were recruited from the author's professional and academic network, selected to represent the three primary audience segments identified in the assignment brief.</p>
@@ -610,7 +604,6 @@
     <div class="sec-label navy">Section 7</div>
     <h2 class="st">Quality Enhancements</h2>
     <div class="sec-rule" style="background:linear-gradient(90deg,#1e3a8a,#93c5fd);"></div>
-    <span class="wc">&#10003; Approx. 500 words</span>
 
     <h3>7.1 Clarity Improvements</h3>
     <p>A systematic plain-language audit was applied to all module slide content following Round 1 testing. Every sentence exceeding 35 words was flagged and restructured. All passive constructions obscuring the responsible party — common in regulatory writing ("data must be protected") — were replaced with active constructions ("the data controller must implement..."). Regulatory obligation statements were rewritten in a consistent two-sentence structure: first stating the specific obligation with provision citation, then immediately stating the consequence of non-compliance. For example: "Under PDPO Section 33A, the data controller must notify the PCPD within three days of a data breach likely to result in real risk of significant harm. Failure to notify is an offence carrying a maximum fine of HKD 50,000 and six months' imprisonment." Testing confirmed this structure was significantly more memorable than abstract compliance statements.</p>
@@ -639,7 +632,6 @@
     <div class="sec-label slate">Section 8</div>
     <h2 class="st">Reflection &amp; Lessons Learned</h2>
     <div class="sec-rule" style="background:linear-gradient(90deg,#475569,#cbd5e1);"></div>
-    <span class="wc">&#10003; Approx. 350 words</span>
 
     <h3>8.1 What Worked Well</h3>
     <p>The decision to build the training as a live, deployed web application was the single most impactful design choice of the project. It transformed an academic deliverable into a genuinely usable professional tool that a real organisation could direct staff to, track completion from, and iterate over time. The three structured testing rounds were highly effective: the seven specific quality improvements documented in Section 6.6 would not have been identified through self-review alone, and each represented a meaningful uplift directly serving the target learner. The GenAI integration strategy — AI as structured first-draft assistant with mandatory human verification, not as final-copy generator — produced content of higher quality than either working mode alone could have achieved within the available time and budget.</p>
