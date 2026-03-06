@@ -145,16 +145,34 @@ const MODULE_TIPS: Record<number, string[]> = {
   ],
 }
 
+const LS_KEY = (userId: number | undefined) => `gyd_completed_${userId ?? 'guest'}`
+
 export default function ModulePage() {
   const { id } = useParams()
   const num = parseInt(id ?? '1', 10)
   const mod = MODULES.find(m => m.number === num)
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const [slidesViewed, setSlidesViewed] = useState(false)
   const [mcqScore, setMcqScore] = useState<{ score: number; total: number } | null>(null)
-  const [manuallyCompleted, setManuallyCompleted] = useState(false)
+  const [manuallyCompleted, setManuallyCompleted] = useState(() => {
+    // Initialise from localStorage so revisiting the page shows correct state
+    try {
+      const saved = JSON.parse(localStorage.getItem(LS_KEY(undefined)) || '[]') as string[]
+      return !!mod && saved.includes(mod.id)
+    } catch { return false }
+  })
   const completedRef = useRef(false)
   const [videoUrl, setVideoUrl] = useState<string>('')
+
+  // Track page visit
+  useEffect(() => {
+    if (!token || !mod) return
+    fetch('/api/progress/visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ page: `/module/${mod.number}` }),
+    }).catch(() => {})
+  }, [mod?.number, token])
 
   useEffect(() => {
     if (!mod) return
@@ -164,27 +182,40 @@ export default function ModulePage() {
       .catch(() => {})
   }, [mod])
 
+  const saveToLocalStorage = (modId: string) => {
+    try {
+      const key = LS_KEY(user?.id)
+      const saved = JSON.parse(localStorage.getItem(key) || '[]') as string[]
+      if (!saved.includes(modId)) {
+        saved.push(modId)
+        localStorage.setItem(key, JSON.stringify(saved))
+      }
+    } catch { /* ignore */ }
+  }
+
   const markComplete = (slideDone: boolean, mcq: { score: number; total: number } | null) => {
     if (!mod || !token || completedRef.current) return
     if (!slideDone || !mcq) return
     completedRef.current = true
     setManuallyCompleted(true)
+    saveToLocalStorage(mod.id)
     fetch('/api/progress/module-complete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ module_id: mod.id, mcq_score: mcq.score, mcq_total: mcq.total }),
-    }).catch(() => { /* silent */ })
+    }).catch(() => { /* silent — already saved to localStorage */ })
   }
 
   const markCompleteManual = () => {
     if (!mod || !token) return
     completedRef.current = true
     setManuallyCompleted(true)
+    saveToLocalStorage(mod.id)
     fetch('/api/progress/module-complete', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ module_id: mod.id, mcq_score: mcqScore?.score ?? null, mcq_total: mcqScore?.total ?? null }),
-    }).catch(() => { /* silent */ })
+    }).catch(() => { /* silent — already saved to localStorage */ })
   }
 
   if (!mod) {

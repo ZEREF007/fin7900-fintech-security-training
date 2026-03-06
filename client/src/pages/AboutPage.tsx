@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion'
-import { ExternalLink, Heart, Shield, BookOpen, Target, Linkedin, Download, FileText } from 'lucide-react'
+import { ExternalLink, Heart, Shield, BookOpen, Target, Linkedin, Rocket, Star } from 'lucide-react'
 
-const RESUME_VIEW_URL     = 'https://lifehkbueduhk-my.sharepoint.com/:b:/g/personal/25449745_life_hkbu_edu_hk/IQBgRkmLJ7qFQqLhFLuO4UqqAf1amA5rxjIBS3Qkoz1eRTE?e=XJD2eE&action=embedview'
-const RESUME_DOWNLOAD_URL = 'https://lifehkbueduhk-my.sharepoint.com/:b:/g/personal/25449745_life_hkbu_edu_hk/IQBgRkmLJ7qFQqLhFLuO4UqqAf1amA5rxjIBS3Qkoz1eRTE?e=XJD2eE&download=1'
+const RESUME_DOWNLOAD_URL = 'https://lifehkbueduhk-my.sharepoint.com/:b:/g/personal/25449745_life_hkbu_edu_hk/IQBgRkmLJ7qFQqLhFLuO4UqqAf1amA5rxjIBS3Qkoz1eRTE?e=XJD2eE'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -129,16 +128,19 @@ export default function AboutPage() {
           <div className="card space-y-4">
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
               I'm a finance and technology student with a deep passion for the intersection
-              of FinTech, cybersecurity, and product development. I believe that technology
-              should empower people — not overwhelm them — and that real security education
-              should be accessible, engaging, and practical.
+              of FinTech and product development. I believe that technology should empower
+              people — not overwhelm them — and that real financial education should be
+              accessible, engaging, and practical.
             </p>
             <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
-              Beyond academics, I enjoy building things from scratch: this platform is a
-              testament to that curiosity — from designing the UI to writing the backend
-              APIs and deploying to the cloud. I'm always looking for opportunities to
-              bridge the gap between complex technical concepts and real-world business
-              impact.
+              My focus is on FinTech innovation: how digital payments, security platforms,
+              and data-driven tools are reshaping the financial services landscape. This
+              platform is a direct expression of that passion — built from scratch, from
+              UI design to backend APIs to cloud deployment.
+            </p>
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+              I'm always looking for opportunities to bridge the gap between complex
+              financial technology concepts and real-world business impact.
             </p>
             <a
               href="https://www.linkedin.com/in/acebhatt"
@@ -153,39 +155,98 @@ export default function AboutPage() {
           </div>
         </motion.div>
 
-        {/* Resume */}
+        {/* Resume — Hire Me CTA */}
         <motion.div
           custom={2}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
+          className="rounded-2xl overflow-hidden border border-amber-200 dark:border-amber-700/40 shadow-lg"
         >
-          <div className="flex items-center justify-between gap-3 mb-6 flex-wrap">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center">
-                <FileText className="w-5 h-5 text-amber-600 dark:text-amber-400" />
-              </div>
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">My Résumé</h2>
+          {/* Top accent bar */}
+          <div className="h-2 bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400" />
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 p-10 text-center">
+            <div className="text-6xl mb-4">🚀</div>
+            <h2 className="text-3xl font-extrabold text-slate-900 dark:text-white mb-3">
+              Hire Me — Seriously.
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 text-lg max-w-xl mx-auto mb-2 leading-relaxed">
+              You've just seen what I can build. A full-stack FinTech learning platform —
+              React, Node.js, cloud-deployed, live data integrations — all designed in
+              one assignment.
+            </p>
+            <p className="text-slate-500 dark:text-slate-400 text-base max-w-lg mx-auto mb-8 leading-relaxed">
+              Imagine what I'll build with your team behind me.
+              <span className="text-amber-600 dark:text-amber-400 font-semibold"> Invest in my potential</span> — 
+              you won't regret it. ✨
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <a
+                href={RESUME_DOWNLOAD_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-8 py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-amber-500/40 text-lg"
+              >
+                <Rocket className="w-5 h-5" />
+                Here's My Résumé →
+              </a>
+              <a
+                href="https://www.linkedin.com/in/acebhatt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2.5 px-8 py-4 bg-[#0A66C2] hover:bg-[#0856a8] text-white font-bold rounded-xl transition-all duration-200 hover:shadow-xl hover:shadow-[#0A66C2]/40 text-lg"
+              >
+                <Linkedin className="w-5 h-5" />
+                Let's Talk on LinkedIn
+              </a>
             </div>
-            <a
-              href={RESUME_DOWNLOAD_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-white font-semibold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/30 text-sm"
-            >
-              <Download className="w-4 h-4" />
-              Download PDF
-            </a>
+            <p className="text-slate-400 dark:text-slate-500 text-sm mt-6 flex items-center justify-center gap-1.5">
+              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+              Available for internships, part-time roles &amp; exciting FinTech opportunities
+            </p>
           </div>
-          {/* Embedded preview */}
-          <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/60 shadow-md bg-white dark:bg-slate-800" style={{ height: '780px' }}>
-            <iframe
-              src={RESUME_VIEW_URL}
-              title="Ace Bhatt — Résumé"
-              className="w-full h-full"
-              allow="autoplay"
-            />
+        </motion.div>
+
+        {/* LinkedIn Activity */}
+        <motion.div
+          custom={2.5}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-[#0A66C2]/10 dark:bg-[#0A66C2]/20 flex items-center justify-center">
+              <Linkedin className="w-5 h-5 text-[#0A66C2]" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">My LinkedIn Activity</h2>
+          </div>
+          <div className="card flex flex-col sm:flex-row items-center gap-6">
+            <div className="w-20 h-20 rounded-2xl bg-[#0A66C2] flex items-center justify-center shrink-0 text-white text-4xl font-extrabold shadow-lg">
+              A
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <p className="font-bold text-slate-900 dark:text-white text-xl mb-1">Ace Bhatt</p>
+              <p className="text-slate-500 dark:text-slate-400 text-base mb-4">
+                Finance &amp; Technology · FinTech Enthusiast · Builder
+              </p>
+              <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed mb-5">
+                Follow me on LinkedIn to see my latest thoughts on FinTech, product
+                development, and what I'm building next. I share insights, project
+                updates, and connect with professionals across the industry.
+              </p>
+              <a
+                href="https://www.linkedin.com/in/acebhatt"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-[#0A66C2] hover:bg-[#0856a8] text-white font-semibold rounded-xl transition-all text-base"
+              >
+                <Linkedin className="w-5 h-5" />
+                Follow &amp; See My Posts
+                <ExternalLink className="w-4 h-4 opacity-70" />
+              </a>
+            </div>
           </div>
         </motion.div>
 

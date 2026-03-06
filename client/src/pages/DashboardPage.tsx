@@ -123,7 +123,10 @@ export default function DashboardPage() {
   }
 
   const visitedPages = new Set(data?.visits.map(v => v.page) || [])
-  const completedIds = new Set((data?.moduleCompletions || []).map(c => c.module_id))
+  // Merge API completions with localStorage fallback (works even if server is momentarily unreachable)
+  const localKey = `gyd_completed_${user?.id}`
+  const localCompletions: string[] = (() => { try { return JSON.parse(localStorage.getItem(localKey) || '[]') } catch { return [] } })()
+  const completedIds = new Set([...(data?.moduleCompletions || []).map(c => c.module_id), ...localCompletions])
   const modulesVisited = ['/module/1', '/module/2', '/module/3', '/module/4', '/module/5'].filter(p => visitedPages.has(p)).length
   const modulesCompleted = ['mod1','mod2','mod3','mod4','mod5'].filter(id => completedIds.has(id)).length
   const pagesVisited = visitedPages.size
