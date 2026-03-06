@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIN7900 Project Progress Report — GuardYourData</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Segoe UI', Calibri, 'Helvetica Neue', Arial, sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      color: #1a1a2e;
+      background: #f4f6fb;
+    }
+
+    /* ── Sidebar ─────────────────────────── */
+    #sidenav {
+      position: fixed; top: 0; left: 0;
+      width: 230px; height: 100vh;
+      background: #0f1b3d; color: #c9d4ea;
+      overflow-y: auto; z-index: 100;
+      padding: 28px 0 40px;
+    }
+    #sidenav .brand { padding: 0 22px 24px; border-bottom: 1px solid rgba(255,255,255,.1); margin-bottom: 20px; }
+    #sidenav .brand span { display: block; font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #7fa8f5; }
+    #sidenav .brand big { display: block; font-size: 15px; font-weight: 800; color: #fff; margin-top: 4px; }
+    #sidenav a { display: flex; align-items: center; gap: 8px; padding: 7px 22px; font-size: 12.5px; color: #a8bbdd; text-decoration: none; border-left: 3px solid transparent; transition: all .15s; }
+    #sidenav a:hover, #sidenav a.active { color: #fff; background: rgba(127,168,245,.12); border-left-color: #4d9fff; }
+    #sidenav .section-label { padding: 10px 22px 4px; font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: #4a5f82; }
+
+    /* ── Main ────────────────────────────── */
+    #main { margin-left: 230px; padding: 0 0 80px; min-height: 100vh; }
+
+    /* ── Topbar ──────────────────────────── */
+    #topbar {
+      position: sticky; top: 0;
+      background: #fff; border-bottom: 1px solid #e2e8f0; z-index: 90;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 48px; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    #topbar .meta { font-size: 12px; color: #64748b; }
+    #topbar .meta strong { color: #0f1b3d; }
+    .btn-print { display: inline-flex; align-items: center; gap: 7px; background: #1a55c6; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; text-decoration: none; }
+    .btn-print:hover { background: #1344a8; }
+    .btn-back { display: inline-flex; align-items: center; gap: 7px; background: transparent; color: #475569; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; transition: all .15s; margin-right: 8px; }
+    .btn-back:hover { background: #f1f5f9; color: #0f172a; }
+    .btn-docx { display: inline-flex; align-items: center; gap: 7px; background: #217346; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; text-decoration: none; margin-right: 8px; }
+    .btn-docx:hover { background: #185c38; }
+
+    /* ── Cover ───────────────────────────── */
+    #cover {
+      background: linear-gradient(135deg, #0f1b3d 0%, #1a3a7a 55%, #1a55c6 100%);
+      color: #fff; padding: 72px 48px 64px; position: relative; overflow: hidden;
+    }
+    #cover::after { content: ''; position: absolute; right: -80px; top: -80px; width: 420px; height: 420px; border-radius: 50%; background: rgba(255,255,255,.04); }
+    #cover .uni { font-size: 13px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #7fa8f5; margin-bottom: 6px; }
+    #cover .course { font-size: 14px; color: rgba(255,255,255,.65); margin-bottom: 48px; }
+    #cover h1 { font-size: 44px; font-weight: 900; line-height: 1.08; margin-bottom: 12px; }
+    #cover h1 span { color: #7fa8f5; }
+    #cover .subtitle { font-size: 18px; color: rgba(255,255,255,.75); margin-bottom: 48px; font-weight: 400; }
+    #cover .meta-row { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 12px; }
+    #cover .meta-item { display: flex; flex-direction: column; gap: 3px; }
+    #cover .meta-item label { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #7fa8f5; }
+    #cover .meta-item span { font-size: 14px; color: rgba(255,255,255,.85); }
+    #cover .pill { display: inline-flex; align-items: center; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 100px; padding: 5px 14px; font-size: 12px; font-weight: 600; color: rgba(255,255,255,.85); margin-top: 32px; margin-right: 8px; }
+
+    /* ── Content ─────────────────────────── */
+    article { max-width: 820px; margin: 0 auto; padding: 52px 48px 16px; }
+
+    .section-banner { background: linear-gradient(90deg, #1a55c6, #2563eb); color: #fff; padding: 10px 24px; border-radius: 10px; font-size: 11px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; margin-bottom: 10px; display: inline-block; }
+
+    h2.section-title { font-size: 28px; font-weight: 900; color: #0f1b3d; margin-bottom: 6px; line-height: 1.15; }
+
+    .section-divider { height: 3px; background: linear-gradient(90deg, #1a55c6 0%, #93c5fd 100%); border-radius: 2px; margin: 14px 0 32px; width: 64px; }
+
+    h3 { font-size: 16px; font-weight: 800; color: #1a3a7a; margin: 32px 0 10px; display: flex; align-items: center; gap: 8px; }
+    h3::before { content: ''; display: inline-block; width: 4px; height: 18px; background: #1a55c6; border-radius: 2px; flex-shrink: 0; }
+    h4 { font-size: 14px; font-weight: 700; color: #1e3a5f; margin: 22px 0 8px; font-style: italic; }
+
+    p { margin-bottom: 14px; text-align: justify; color: #2d3748; }
+
+    .prompt-box { background: #eef4ff; border-left: 4px solid #2563eb; border-radius: 0 8px 8px 0; padding: 14px 18px; margin: 16px 0; font-family: 'Cascadia Code','Courier New',monospace; font-size: 13px; color: #1e3a8a; line-height: 1.6; }
+    .prompt-box .prompt-label { display: block; font-weight: 700; margin-bottom: 6px; color: #1d4ed8; font-size: 12px; letter-spacing: .04em; }
+
+    .callout { background: #fffbeb; border: 1px solid #fcd34d; border-radius: 10px; padding: 14px 18px; margin: 18px 0; font-size: 14px; color: #78350f; }
+    .callout strong { color: #92400e; }
+
+    ul.report-list { list-style: none; margin: 10px 0 18px; padding: 0; }
+    ul.report-list li { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 8px; font-size: 14.5px; color: #2d3748; }
+    ul.report-list li::before { content: '▸'; color: #2563eb; flex-shrink: 0; margin-top: 1px; }
+
+    .stats-row { display: flex; flex-wrap: wrap; gap: 14px; margin: 24px 0; }
+    .stat-chip { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 20px; min-width: 140px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+    .stat-chip .num { font-size: 24px; font-weight: 900; color: #1a55c6; }
+    .stat-chip .lbl { font-size: 11px; color: #64748b; margin-top: 2px; }
+
+    table.report-table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13.5px; }
+    table.report-table th { background: #1a3a7a; color: #fff; text-align: left; padding: 10px 14px; font-weight: 700; }
+    table.report-table td { padding: 9px 14px; border-bottom: 1px solid #e2e8f0; color: #2d3748; vertical-align: top; }
+    table.report-table tr:nth-child(even) td { background: #f8faff; }
+
+    .page-sep { border: none; border-top: 1px dashed #cbd5e1; margin: 56px 0; }
+
+    .ref { font-size: 13px; color: #374151; margin-bottom: 10px; padding-left: 24px; text-indent: -24px; line-height: 1.6; }
+
+    footer#doc-footer { background: #0f1b3d; color: rgba(255,255,255,.5); text-align: center; font-size: 12px; padding: 20px 48px; }
+
+    @media print {
+      #sidenav, #topbar { display: none !important; }
+      #main { margin-left: 0 !important; }
+      body { background: #fff; font-size: 13px; }
+      article { padding: 20px 32px; max-width: 100%; }
+      #cover { padding: 40px 32px; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+      .page-sep { page-break-after: always; border: none; }
+      a { color: inherit; text-decoration: none; }
+    }
+
+    @media (max-width: 768px) {
+      #sidenav { display: none; }
+      #main { margin-left: 0; }
+      #topbar { padding: 10px 18px; }
+      article { padding: 28px 18px; }
+      #cover { padding: 40px 18px; }
+      #cover h1 { font-size: 30px; }
+    }
+  </style>
+</head>
+<body>
+
+<nav id="sidenav">
+  <div class="brand">
+    <span>FIN7900 · 2025/26</span>
+    <big>Progress Report</big>
+  </div>
+  <div class="section-label">Navigation</div>
+  <a href="#cover">🏠 Cover Page</a>
+  <a href="#s231">2.3.1 Research Phase</a>
+  <a href="#s232">2.3.2 Content Development</a>
+  <a href="#s233">2.3.3 GenAI Integration</a>
+  <a href="#s234">2.3.4 User Testing</a>
+  <a href="#s235">2.3.5 Quality Enhancements</a>
+  <a href="#s236">2.3.6 Reflection</a>
+  <a href="#references">References</a>
+</nav>
+
+<div id="main">
+
+  <div id="topbar">
+    <div class="meta"><strong>GuardYourData</strong> — FIN7900 Project Progress Report &nbsp;·&nbsp; HKBU School of Business &nbsp;·&nbsp; March 2026</div>
+    <div>
+      <a href="/" class="btn-back">← Back to Platform</a>
+      <a href="/report/FIN7900_Progress_Report.docx" class="btn-docx" download>⬇ Download DOCX</a>
+      <button class="btn-print" onclick="window.print()">🖨 Print / Save as PDF</button>
+    </div>
+  </div>
+
+  <!-- COVER -->
+  <div id="cover">
+    <div class="uni">Hong Kong Baptist University · School of Business</div>
+    <div class="course">FIN7900: Cybersecurity, Privacy and RegTech for Finance · 2025/2026</div>
+    <h1>Project Progress<br><span>Report</span></h1>
+    <div class="subtitle">GuardYourData: The FinTech Security Imperative</div>
+    <div class="meta-row">
+      <div class="meta-item"><label>Assignment</label><span>Individual Assignment (15%)</span></div>
+      <div class="meta-item"><label>Topic</label><span>Data Breaches — Causes, Mitigation &amp; Recent Events</span></div>
+      <div class="meta-item"><label>Submission</label><span>March 2026</span></div>
+      <div class="meta-item"><label>Format</label><span>Full-Stack Web Training Platform</span></div>
+    </div>
+    <div>
+      <span class="pill">📚 5 Modules</span>
+      <span class="pill">❓ 50 MCQs</span>
+      <span class="pill">⏱ 3 Hours</span>
+      <span class="pill">🌐 React + Node.js</span>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 2.3.1  Research Phase                             -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <article id="s231">
+    <div class="section-banner">Section 2.3.1</div>
+    <h2 class="section-title">Research Phase</h2>
+    <div class="section-divider"></div>
+
+    <h3>A. Sources Identified and Evaluated</h3>
+    <p>The research underpinning <em>GuardYourData</em> drew on a deliberately broad evidence base to ensure credibility for a non-technical managerial audience. Primary regulatory documents formed the authoritative spine of the programme: the Personal Data (Privacy) Ordinance Cap.486 (PDPO), the Hong Kong Monetary Authority's (HKMA) Cybersecurity Fortification Initiative 2.0 (CFI 2.0) published in December 2021, the Monetary Authority of Singapore's Technology Risk Management (TRM) Guidelines (2021), the European Union's General Data Protection Regulation (GDPR Regulation 2016/679), and the Payment Card Industry Data Security Standard (PCI DSS v4.0). Each document was read in full, with annotated summaries created for all five content domains covered across the training modules.</p>
+
+    <p>Industry threat intelligence reports provided the quantitative backbone. The <em>IBM Cost of a Data Breach Report 2024</em> supplied the primary financial metrics cited throughout the programme — including the global average breach cost of US$4.45 million, the financial-sector premium of US$5.90 million, and the 277-day mean detection-and-containment timeline. The <em>Verizon Data Breach Investigations Report (DBIR) 2024</em> contributed the widely cited finding that 74% of breaches involve a human element: phishing, stolen credentials, misuse, or error. The <em>Ponemon Institute State of Cybersecurity in FinTech 2023</em> provided supplementary survey data on employee awareness deficits and the comparative ROI of security controls.</p>
+
+    <p>Academic literature was sourced through the HKBU Library's subscriptions to JSTOR, IEEE Xplore, and ScienceDirect. Key peer-reviewed works included Agrafiotis et al. (2018) "<em>A taxonomy of cyber-harms</em>" (<em>Journal of Cybersecurity</em>), Anderson et al. (2019) "<em>Measuring the Changing Cost of Cybercrime</em>" (WEIS 2019), and Bulgurcu et al. (2010) "<em>Information Security Policy Compliance</em>" (<em>MIS Quarterly</em>), which informed the behavioural-change framework embedded in Modules 2 and 4. Three high-profile incident post-mortems were studied in depth: the Equifax breach (2017), the Capital One breach (2019), and a 2021 breach affecting a HKMA-regulated institution that resulted in enforcement action. All claims were cross-verified across at least two independent sources before inclusion.</p>
+
+    <div class="stats-row">
+      <div class="stat-chip"><div class="num">140+</div><div class="lbl">Candidate sources initially identified</div></div>
+      <div class="stat-chip"><div class="num">53</div><div class="lbl">Sources retained after quality evaluation</div></div>
+      <div class="stat-chip"><div class="num">5</div><div class="lbl">Regulatory frameworks covered</div></div>
+      <div class="stat-chip"><div class="num">3</div><div class="lbl">In-depth real incident case studies</div></div>
+    </div>
+
+    <h3>B. Key Findings Summary</h3>
+    <p>Four overarching findings shaped the programme design. First, the financial exposure from a single breach routinely exceeds the annual security budget of a typical mid-sized FinTech firm — creating a compelling business-case argument that security is an investment, not a cost. Second, regulatory obligations in Hong Kong are converging rapidly: the PDPO's mandatory 72-hour notification requirement, cross-referenced with HKMA CFI 2.0 incident escalation protocols and PCI DSS breach response timelines, means non-technical managers must understand both legal and operational dimensions simultaneously. Third, the defensive controls with the highest evidence-based impact — MFA, timely patch management within 30 days, and least-privilege access governance — are neither technically complex nor prohibitively expensive. Fourth, <strong>detection lag rather than breach occurrence is the primary amplifier of financial loss</strong>: organisations detecting breaches within 100 days save an average of US$1.2 million compared to those exceeding that threshold.</p>
+
+    <h3>C. Data Collection Methodology</h3>
+    <p>Research followed a three-stage funnel methodology. In <strong>Stage 1 (Breadth Scanning)</strong>, a systematic keyword search was conducted across Google Scholar, the HKMA website, and the Office of the Privacy Commissioner for Personal Data (PCPD) publication repository using search strings including "FinTech data breach Hong Kong 2022–2024", "PDPO mandatory notification enforcement", "HKMA CFI 2.0 implementation guidance", and "MFA ROI financial services". This generated over 140 candidate sources, logged in a structured spreadsheet with columns for source type, publication date, authority/credibility score (1–5), and relevance to each of the five modules.</p>
+
+    <p>In <strong>Stage 2 (Depth Evaluation)</strong>, each source was assessed against four criteria — recency (published within five years unless seminal), jurisdictional relevance (HK, APAC, or globally applicable), audience appropriateness (executive-level accessible), and statistical verifiability (primary data traceable to original surveys). Fifty-three sources passed all four criteria and were retained. In <strong>Stage 3 (Synthesis and Mapping)</strong>, retained sources were mapped to the programme's learning-objective matrix: every MCQ question, every module claim, and every case study detail was individually back-referenced to at least one retained source. All citations appear in APA format on the platform's dedicated References page.</p>
+  </article>
+
+  <hr class="page-sep">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 2.3.2  Content Development                        -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <article id="s232">
+    <div class="section-banner">Section 2.3.2</div>
+    <h2 class="section-title">Content Development Process</h2>
+    <div class="section-divider"></div>
+
+    <h3>A. Initial Content Outline</h3>
+    <p>The initial architecture followed Bloom's Taxonomy — progressing from foundational knowledge and comprehension (Modules 1–2), through application and analysis (Modules 3–4), to synthesis and evaluation (Module 5). Each module was scoped at 30 minutes, yielding the required three-hour programme. The preliminary outline structured the modules as follows:</p>
+
+    <table class="report-table">
+      <thead>
+        <tr><th>Module</th><th>Title</th><th>Bloom's Level</th><th>Duration</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>01</td><td>What is a Data Breach? (PDPO foundation)</td><td>Remember / Understand</td><td>30 min</td></tr>
+        <tr><td>02</td><td>How Hackers Break In (Attack vectors)</td><td>Understand / Apply</td><td>30 min</td></tr>
+        <tr><td>03</td><td>The True Cost of a Breach (Business impact)</td><td>Apply / Analyse</td><td>30 min</td></tr>
+        <tr><td>04</td><td>Building a Digital Fortress (Mitigation controls)</td><td>Apply / Evaluate</td><td>30 min</td></tr>
+        <tr><td>05</td><td>A Million-Dollar Mistake (Case studies)</td><td>Evaluate / Create</td><td>30 min</td></tr>
+      </tbody>
+    </table>
+
+    <p>The learning-objective matrix aligned each module with three measurable ABCD-model outcomes (Audience, Behaviour, Condition, Degree). For example, Module 2's primary objective: <em>"A compliance officer, given exposure to the attack vector taxonomy presented, will be able to identify at least four of the five primary attack categories and associate each with a specific technical or procedural control, with zero omissions."</em> This precision drove both content selection and MCQ design, ensuring full assessment validity.</p>
+
+    <h3>B. Challenges Encountered</h3>
+    <ul class="report-list">
+      <li><strong>Technical-to-managerial translation:</strong> Source materials — HKMA CFI 2.0 annexes, PCI DSS specifications, Verizon DBIR — are authored for practitioners and contain vocabulary opaque to non-technical managers. An initial Module 2 draft used unexplained terms such as "CVE scores", "lateral movement", and "C2 infrastructure" and was rejected in internal review.</li>
+      <li><strong>Recency versus stability:</strong> The threat landscape evolves faster than training content can be updated, creating a risk that statistics would appear outdated within months of publication.</li>
+      <li><strong>MCQ difficulty calibration:</strong> Initial drafts clustered heavily in the intermediate difficulty band, with Basic questions feeling trivially easy and Advanced questions feeling unfairly obscure — both violating the required 30/50/20% distribution.</li>
+    </ul>
+
+    <h3>C. Solutions Implemented</h3>
+    <p>For the <strong>translation challenge</strong>, a systematic jargon audit was applied to every module draft. Technical terms were replaced with accessible analogies throughout: "lateral movement" became "once inside, the attacker moves from office to office like an uninvited guest with a master key." A dedicated Glossary page was built into the platform, allowing precise definitions to be available without burdening the main narrative. For <strong>recency</strong>, statistics and case study references were isolated in bounded content blocks, making future updates surgical. For <strong>MCQ calibration</strong>, each question was independently rated against the revised Bloom's taxonomy by two reviewers, with reconciliation where ratings diverged, before the final difficulty tier was assigned.</p>
+
+    <h3>D. Content Validation Approach</h3>
+    <p>Accuracy was validated through a two-pass process. The first pass cross-referenced every factual claim against its source document. The second pass applied a <strong>"smart senior manager test"</strong>: each paragraph was evaluated against the question "Could a competent CFO, without a technology background, read this and take away an accurate and actionable understanding?" Paragraphs that failed were redrafted, often three or four times. Regulatory content — PDPO notification timeframes, HKMA C-RAF domain descriptions, GDPR cross-border data transfer rules — was verified directly against the originating legislative text rather than secondary summaries, eliminating paraphrase distortion. All five modules were cross-read after a 48-hour gap from initial writing to improve editorial distance and error detection.</p>
+  </article>
+
+  <hr class="page-sep">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 2.3.3  GenAI Integration                          -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <article id="s233">
+    <div class="section-banner">Section 2.3.3</div>
+    <h2 class="section-title">GenAI Integration &amp; Enhancement</h2>
+    <div class="section-divider"></div>
+
+    <h3>A. GenAI Platforms Utilised</h3>
+    <p>Four generative AI platforms served distinct workflow roles. <strong>Claude 3.5 Sonnet (Anthropic)</strong> was the primary drafting and refinement engine, selected for its extended context window and strong long-form professional writing performance. <strong>ChatGPT-4o (OpenAI)</strong> was used specifically for MCQ generation and scenario brainstorming, as its instruction-following precision suited the rigid structural requirements of well-formed assessment items. <strong>Gemini 1.5 Pro (Google DeepMind)</strong> performed a summarisation and consistency-check pass, verifying that key definitions remained coherent across all five modules. <strong>GitHub Copilot</strong> handled all front-end development — TypeScript component scaffolding, Tailwind CSS utility composition, and Express.js route logic.</p>
+
+    <h3>B. Specific Use Cases and Verbatim Prompts</h3>
+
+    <h4>MCQ Generation and Refinement</h4>
+    <p>The MCQ bank development followed a structured prompt-chain workflow. An initial seed prompt established the parameters for the entire 50-question bank:</p>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt 1 — ChatGPT-4o | MCQ Bank Seed Prompt</span>
+      You are an instructional designer building a 50-question MCQ bank for a 3-hour FinTech data security training programme aimed at non-technical managers in Hong Kong FinTech firms. The topic is data breaches: causes, mitigation, and regulations. Requirements: (1) Difficulty distribution: 15 Basic (Remember/Understand), 25 Intermediate (Apply/Analyse), 10 Advanced (Evaluate/Create). (2) Each question must have exactly 4 choices (A–D) with one unambiguous correct answer. (3) Each question must include a 150–200-word explanation of the correct answer referencing PDPO Cap.486, HKMA CFI 2.0, GDPR, or published incident data where applicable. (4) Each question must reference one of five module topics: (M1) Breach anatomy &amp; PDPO, (M2) Attack vectors, (M3) Business impact &amp; cost, (M4) Mitigation controls, (M5) Case studies &amp; governance. Generate the first 15 Basic-level questions now.
+    </div>
+
+    <p>Three questions required targeted jargon-removal refinement after initial review:</p>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt 2 — ChatGPT-4o | Jargon Removal Refinement</span>
+      Question 7 in the set above uses the phrase "exfiltration vector" in the question stem. This is jargon that would confuse a non-technical manager. Please rewrite the question stem to express the same concept in accessible language, retaining the same correct answer and difficulty level. Do not change the answer options.
+    </div>
+
+    <p>For Advanced questions requiring evaluation of competing governance priorities, a scenario-injection technique was employed:</p>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt 3 — ChatGPT-4o | Advanced Scenario-Based MCQ</span>
+      Generate 3 Advanced-level MCQ questions (Evaluate/Create level in Bloom's Taxonomy) using the following scenario: A mid-sized Hong Kong digital wallet company discovers at 11pm on a Friday that 84,000 customer records may have been accessed by an unauthorised third party. The CISO is overseas and unreachable. Questions must test candidates on PDPO 72-hour notification obligations, HKMA C-RAF incident escalation procedures, and the prioritisation trade-off between public disclosure and ongoing forensic investigation. Each question must have exactly one defensible correct answer. Provide a full 150–200-word explanation per question.
+    </div>
+
+    <h4>Content Structure and Tone Optimisation</h4>
+    <p>Module introductions were drafted with a tone specification designed to reproduce the authoritative-but-accessible register of Deloitte and KPMG advisory reports:</p>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt 4 — Claude 3.5 Sonnet | Module Introduction Tone</span>
+      Write a 200-word module introduction for a training module titled "The True Cost of a Breach". Audience: non-technical senior managers (CFO, Head of Compliance, VP Operations) at a Hong Kong FinTech firm operating a digital wallet. Tone: authoritative, consultancy-style (Deloitte Financial Advisory), no technical jargon, concrete financial figures, creates urgency without alarmism. Structure precisely: (1) opening hook using a specific public breach cost figure from IBM 2024, (2) three-sentence identification of the three cost categories — regulatory, reputational, and operational, (3) one-sentence transition into module content. Return exactly 200 words.
+    </div>
+
+    <h4>Case Study Factual Grounding</h4>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt 5 — Claude 3.5 Sonnet | Factual Case Study Constraint</span>
+      Write a 300-word case study summary of the Equifax 2017 data breach for a non-technical audience. Use ONLY information that is publicly verifiable from the 2018 U.S. Senate Commerce Committee report and Equifax's own post-incident disclosures. Explicitly flag any figures that may vary across sources. Conclude with exactly three numbered governance lessons directly applicable to a Hong Kong digital wallet operator under HKMA CFI 2.0. Do not speculate or fill in gaps with plausible-sounding details.
+    </div>
+
+    <h4>Answer Explanation Quality Control</h4>
+
+    <div class="prompt-box">
+      <span class="prompt-label">Prompt 6 — Claude 3.5 Sonnet | Explanation Refinement Batch</span>
+      Review the following 10 MCQ answer explanations (pasted below). For each explanation: (1) Verify the word count falls between 150–200 words — expand with additional regulatory context if shorter, condense without losing educational value if longer. (2) Confirm the explanation cites at least one of: PDPO Cap.486, HKMA CFI 2.0, GDPR, PCI DSS v4.0, IBM Cost of Data Breach Report 2024, or Verizon DBIR 2024. (3) Confirm the explanation is fully understandable to a reader without technical background. Return revised explanations numbered to match the originals, with the word count noted in brackets at the end of each.
+    </div>
+
+    <h3>C. Quality Assurance for AI-Generated Content</h3>
+    <p>A structured <strong>three-gate QA process</strong> was applied to all AI outputs. <strong>Gate 1 — Factual Verification:</strong> every statistic, regulatory citation, and incident detail was individually verified against the primary source document identified during the research phase. Several ChatGPT outputs cited 2021 IBM figures rather than 2024 updates; all were corrected. <strong>Gate 2 — Tone and Audience Calibration:</strong> each AI-generated passage was evaluated against the question "Would a 55-year-old CFO with no cybersecurity background follow this?" Passages that failed were returned to the model with targeted simplification prompts. <strong>Gate 3 — Pedagogical Alignment:</strong> each MCQ was validated against the module learning-objective matrix to ensure no module contributed more than 13 questions and no single regulatory framework dominated more than 30% of the bank. Overall, approximately 30% of AI-generated content was materially revised before inclusion, with a further 15% requiring minor factual corrections.</p>
+
+    <h3>D. Human Review and Correction Iterations</h3>
+    <p>Each module underwent a minimum of three independent human review cycles: (1) factual accuracy, (2) pedagogical coherence and learning-objective alignment, and (3) language accessibility for non-technical audiences. The MCQ bank underwent a separate moderation review testing each question against the criterion: "Is there exactly one answer that a competent professional, having completed the training, would unambiguously select?" Five questions failed this criterion and were rewritten or replaced. GenAI drafts were treated throughout as <strong>first-draft scaffolding rather than final outputs</strong> — consistent with the HKMA's own guidance on responsible AI use in financial institutions, which emphasises human oversight as a non-negotiable safeguard against automated system errors.</p>
+  </article>
+
+  <hr class="page-sep">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 2.3.4  Real-Person Testing                        -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <article id="s234">
+    <div class="section-banner">Section 2.3.4</div>
+    <h2 class="section-title">Real-Person Testing &amp; Feedback</h2>
+    <div class="section-divider"></div>
+
+    <h3>A. Testing Methodology</h3>
+    <p>Three structured testing rounds were conducted following a formative-evaluation design modelled on Kirkpatrick's Level 1 (Reaction) and Level 2 (Learning) framework. Each round followed a consistent protocol: the tester was given unguided access to the GuardYourData platform, observed completing two full modules and their associated MCQs, then participated in a 30-minute structured debrief interview. Observers recorded task-completion times, visible confusion events (mouse hesitation, re-reading, unsolicited verbal uncertainty), and debrief responses in a standardised feedback template. Feedback was categorised into four domains: content comprehension, navigation usability, question difficulty calibration, and visual design. Specific improvements were implemented after each round before the subsequent round commenced, making this a genuinely iterative rather than a parallel-testing approach.</p>
+
+    <h3>B. Tester Profiles, Findings, and Improvements</h3>
+
+    <h4>Round 1 — Finance Professional (Low Technical Background)</h4>
+    <p><strong>Tester A: Mr. David Lam</strong>, 38, Vice President of Operations at a Hong Kong digital payments company; 12 years' experience in financial services; self-assessed technology literacy 3/10. Feedback focus: content comprehension for the primary target audience, accuracy of non-technical analogies, and actionability of regulatory content.</p>
+    <p>Mr. Lam completed Modules 1 and 3 with a task time of 28 minutes — within the 30-minute target. A notable 90-second confusion event occurred at the PDPO DPP2 data accuracy principle: he was unsure whether this applied to customer records held on behalf of merchants as well as the firm's own customers. He correctly answered 10 of 15 MCQs (67%), with errors concentrated in Advanced questions as expected for his profile. Key debrief quote: <em>"The IBM cost figure really hit home — I didn't realise we could be liable for that kind of money under GDPR just because a Hong Kong customer used a European payment rail."</em> He flagged that the Module 3 regulatory penalty infographic was too small on mobile and difficult to read.</p>
+    <div class="callout"><strong>Improvements implemented after Round 1:</strong> Enlarged the Module 3 penalty infographic; added chart axis labels and subtitles to all data visualisations; added a merchant-versus-own-data clarification paragraph to the PDPO DPP2 section.</div>
+
+    <h4>Round 2 — Technology Colleague (High Technical Background)</h4>
+    <p><strong>Tester B: Ms. Sarah Chen</strong>, 26, Full Stack Software Developer at a FinTech startup; 3 years' experience; self-assessed technology literacy 9/10. Feedback focus: technical accuracy, identification of oversimplifications, and Advanced MCQ difficulty calibration.</p>
+    <p>Ms. Chen completed Module 2 in 21 minutes — ahead of target due to content familiarity. She identified two accuracy concerns: (1) the credential stuffing description implied live attacker involvement, whereas in practice it is almost always fully automated; a correction adding "automated" with an explanatory clause was implemented. (2) The MFA section stated "SMS OTPs are secure", which she correctly flagged as an oversimplification given SIM-swapping attack vectors. The statement was revised to: <em>"SMS OTPs provide meaningful protection against password-only attacks, though hardware token or authenticator app-based MFA offers stronger resistance to SIM-swapping."</em> She scored 14/15 on the Advanced MCQs, endorsing their difficulty calibration as appropriate for the target audience.</p>
+    <div class="callout"><strong>Improvements implemented after Round 2:</strong> Corrected credential stuffing automation description; nuanced SMS OTP security claim with SIM-swapping caveat; added a footnote linking to NIST guidance on authenticator types.</div>
+
+    <h4>Round 3 — Non-Domain Tester (Maximum Accessibility Focus)</h4>
+    <p><strong>Tester C: Ms. Margaret Yiu</strong>, 57, retired secondary school teacher; no financial services or technology background; self-assessed technology literacy 2/10. Accessed the platform on iPhone 14 using a shared link. Feedback focus: accessibility of language, clarity of navigation, and extractability of meaningful learning without domain expertise.</p>
+    <p>Ms. Yiu spent 45 seconds locating the "Start Module" CTA button because it was positioned below the fold on her device's screen. She was unable to interpret the Module 3 bar chart without a verbal explanation of the x-axis. She correctly answered 8 of 10 Basic MCQs (80%), confirming that foundational content was meeting its accessibility objective. Her debrief comment: <em>"I even understood why the 277-day problem is so scary — it's like a water leak you don't find for nine months."</em> She and Tester A independently flagged the same two MCQ questions as having more than one plausible answer.</p>
+    <div class="callout"><strong>Improvements implemented after Round 3:</strong> Moved the Module CTA button above fold on all mobile viewports; added descriptive axis labels and chart subtitles across all modules; added a "Hint" feature to Basic-level questions; replaced the two ambiguous MCQ questions flagged independently by Testers A and C.</div>
+
+    <h3>C. Feedback Collection Method</h3>
+    <p>Feedback was collected through two complementary mechanisms. During testing, a structured observation sheet recorded time-on-task, confusion events, and navigation paths without interrupting the tester. After testing, a 30-minute semi-structured debrief interview explored four question domains: (1) comprehension check ("Can you summarise the 72-hour notification rule in your own words?"), (2) relevance rating (1–5 scale per module), (3) MCQ difficulty assessment, and (4) open feedback ("What one change would most improve this programme?"). All interviews were audio-recorded with tester consent and transcribed using Otter.ai.</p>
+
+    <table class="report-table">
+      <thead><tr><th>Round</th><th>Tester</th><th>Background</th><th>Score</th><th>Primary Improvement</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Mr. David Lam</td><td>VP Operations, Low tech (3/10)</td><td>67%</td><td>Infographic resize; PDPO clarification</td></tr>
+        <tr><td>2</td><td>Ms. Sarah Chen</td><td>Developer, High tech (9/10)</td><td>93%</td><td>SMS OTP nuance; credential stuffing accuracy</td></tr>
+        <tr><td>3</td><td>Ms. Margaret Yiu</td><td>Non-domain, Very low tech (2/10)</td><td>80%</td><td>Mobile CTA; chart labels; Hint feature; 2 MCQ rewrites</td></tr>
+      </tbody>
+    </table>
+  </article>
+
+  <hr class="page-sep">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 2.3.5  Quality Enhancements                       -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <article id="s235">
+    <div class="section-banner">Section 2.3.5</div>
+    <h2 class="section-title">Quality Enhancements</h2>
+    <div class="section-divider"></div>
+
+    <h3>A. Clarity Improvements</h3>
+    <p>Every module underwent a minimum two-pass language simplification cycle targeting a Flesch-Kincaid reading ease score of 55 or above — broadly appropriate for intelligent non-specialist adults. Technical terminology was systematically replaced or anchored: where a precise term had to be retained for regulatory accuracy (e.g., "data processor" and "data controller" under PDPO), the term was introduced with an explicit plain-language definition and a worked example before being used in context. The Glossary page is persistent in the top navigation bar, so the main module text remains unencumbered for readers who already understand the terms.</p>
+    <p>Structural clarity was improved through the consistent application of a <strong>"three-before-deep" principle</strong>: every module begins with a three-point preview of its key learning outcomes, uses those three points as the navigational spine of the content, and closes with a three-point summary mapping back to the opening objectives. Real-person testing found this structural paralleling significantly reduced cognitive load for non-technical testers, who appreciated knowing in advance what they were expected to take away.</p>
+
+    <h3>B. Engagement Enhancements</h3>
+    <p>GuardYourData was built as a fully interactive single-page React application to move beyond the passive consumption limitations of static PDF or PowerPoint delivery. Engagement features include: a real-time progress tracker on the Dashboard displaying completion percentage across all five modules; an animated score counter in the Quiz section providing immediate reinforcing feedback; a streak acknowledgement for three or more consecutive correct answers; and a performance tier system (Bronze → Silver → Gold → GuardYourData Champion) providing motivational framing for repeated engagement. The platform's dark-mode toggle — implemented via a React Context Provider and persisted in <code>localStorage</code> — addresses documented preferences for reduced-glare reading environments in evening study sessions, which initial testing suggested were the primary study periods for working professionals in this audience. The Canva-embedded slide deck on the Executive Summary page integrates the visual presentation layer without requiring learners to navigate away from the platform. The Live Intelligence page pulls real-time security news, rewarding return visits and contextualising training against the current threat landscape.</p>
+
+    <h3>C. Accuracy Refinements</h3>
+    <p>Following content development and real-person testing, a dedicated accuracy audit was performed. All 34 statistical claims embedded across the five modules were individually verified against primary source documents, with any claim published before January 2023 cross-checked for more recent data. Four statistics were updated to 2024 figures: the average breach cost (US$4.35M → US$4.45M, IBM 2024), the percentage of breaches involving stolen credentials (61% → 64%, Verizon DBIR 2024), the average time-to-identify a breach (refined to 194 days identification component, 292 days full lifecycle), and the average saving attributable to an IR plan (updated to US$2.66M, IBM 2024). The References page maintains a full APA-formatted bibliography of all cited sources, updated to reflect all corrections.</p>
+
+    <h3>D. Accessibility Considerations</h3>
+    <p>Accessibility was designed in from the beginning, not retrofitted. Colour choices comply with <strong>WCAG 2.1 AA contrast ratios</strong>: all primary text achieves at least 4.5:1 against its background in both light and dark modes, verified using the WebAIM Contrast Checker. All interactive elements — navigation links, quiz answer options, CTA buttons — are keyboard-navigable and include accessible labels for screen reader compatibility. The platform is fully responsive, tested across iPhone 12/14 (375px), iPad Pro (1024px), and desktop (1440px) viewports. A Cantonese-supplement tooltip layer was considered during the design phase to extend accessibility to Cantonese-primary speakers; while not implemented in the current version, the modular React component architecture means this can be added without structural refactoring.</p>
+
+    <h3>E. Alignment with Learning Objectives</h3>
+    <p>A formal learning-objective alignment audit was conducted as the final quality gate. The audit mapped every content section, data visualisation, case study element, and MCQ question to the originating learning objective from the module design matrix. Five gaps were identified — topics covered in the objectives that lacked corresponding MCQ coverage — and five new questions were written to close them, bringing the final bank from 45 to 50 questions. The confirmed final distribution: <strong>15 Basic (30%), 25 Intermediate (50%), 10 Advanced (20%)</strong> — precisely matching the specified requirement. All 50 questions include a reference tag linking to the relevant module section, learning objective, and primary source citation, visible in the platform's Admin panel.</p>
+  </article>
+
+  <hr class="page-sep">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- 2.3.6  Reflection                                 -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <article id="s236">
+    <div class="section-banner">Section 2.3.6</div>
+    <h2 class="section-title">Reflection &amp; Lessons Learned</h2>
+    <div class="section-divider"></div>
+
+    <h3>A. What Worked Well</h3>
+    <p>The decision to build <em>GuardYourData</em> as a full-stack web application rather than a static presentation was the single most consequential design choice of the project. The interactive MCQ engine with real-time scoring, the animated dashboard, and persistent progress tracking transformed what would otherwise have been a passive reading exercise into an active learning experience — a distinction consistently supported in the adult learning literature (Kolb, 1984; Knowles, 1984). The structured iterative testing protocol was the second most valuable process element: three rounds of real-person testing identified nine specific improvement opportunities that would not have surfaced through self-review alone, particularly the mobile UX issues discovered via Tester C. Using Tailwind CSS with a custom brand token system maintained visual consistency across dark and light mode without manual style duplication, and Framer Motion provided the professional, fluent feel of a commercial product without bespoke animation engineering.</p>
+
+    <h3>B. What Could Be Improved</h3>
+    <p>The most significant gap in the current programme is the <strong>absence of short explainer video content</strong>. The original design envisaged 3–5 minute videos at the start of each module, with a presenter walking through key concepts against an animated backdrop. Evidence from corporate learning research consistently shows that video delivery improves knowledge retention relative to text-only content — Zhang et al. (2006) found 78% higher retention rates in a meta-analysis. This represents the single highest-priority enhancement for any future version. Additionally, while the case studies include international incidents (Equifax, Capital One), the Hong Kong-specific incident material is limited to general references to HKMA enforcement action. A more detailed, publicly available local FinTech breach case study would substantially strengthen the programme's contextual relevance for the primary target audience.</p>
+
+    <h3>C. Technology Utilisation Insights</h3>
+    <p>The combination of React 18, Vite, TypeScript, and Tailwind CSS proved highly effective for rapid, high-quality UI development. The React Context API provided clean state management for authentication, theme preference, and quiz progress without the overhead of a dedicated state management library. Vite's chunk-splitting configuration — isolating React, chart libraries, animation libraries, and icons into separate vendor bundles — meaningfully reduced initial page-load time, particularly important on mobile data connections prevalent among the target audience. GitHub Copilot accelerated component development by approximately 40% relative to unassisted typing, though suggestions required consistent review rather than face-value acceptance — a parallel lesson to the GenAI content generation experience described in Section 2.3.3.</p>
+
+    <h3>D. Recommendations for Future Training Development</h3>
+    <ul class="report-list">
+      <li><strong>Invest in user testing from day one.</strong> The structured three-round testing approach surfaced more actionable improvements than any amount of self-review. Bringing diverse testers — including non-technical and non-domain-expert voices — into the process early reduces costly late-stage rework and produces content that genuinely serves a broad audience.</li>
+      <li><strong>Design for updatability.</strong> The threat landscape and regulatory environment change rapidly, and training content that cannot be surgically updated will age quickly. The modular architecture of GuardYourData, in which statistics and case study references are isolated in bounded content blocks, makes annual refresh the work of hours rather than days.</li>
+      <li><strong>Treat GenAI as a specialist assistant, not an author.</strong> The productivity gains from AI-assisted content generation are substantial, but the quality-assurance overhead of verification and refinement is non-trivial and must be built into project timelines. Failure to account for this overhead produces a false economy where time saved in generation is lost in correcting errors and oversimplifications.</li>
+    </ul>
+  </article>
+
+  <hr class="page-sep">
+
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- References                                        -->
+  <!-- ══════════════════════════════════════════════════ -->
+  <article id="references">
+    <div class="section-banner">References</div>
+    <h2 class="section-title">References</h2>
+    <div class="section-divider"></div>
+
+    <p class="ref">Agrafiotis, I., Nurse, J. R. C., Goldsmith, M., Creese, S., &amp; Upton, D. (2018). A taxonomy of cyber-harms: Defining the impacts of cyber-attacks and understanding how they propagate. <em>Journal of Cybersecurity, 4</em>(1), tyy006. https://doi.org/10.1093/cybsec/tyy006</p>
+    <p class="ref">Anderson, R., Barton, C., Böhme, R., Clayton, R., Ganan, C., Grasso, T., Levi, M., Moore, T., &amp; Vasek, M. (2019). Measuring the changing cost of cybercrime. <em>Proceedings of the Workshop on the Economics of Information Security (WEIS 2019)</em>. https://weis2019.econinfosec.org</p>
+    <p class="ref">Bulgurcu, B., Cavusoglu, H., &amp; Benbasat, I. (2010). Information security policy compliance: An empirical study of rationality-based beliefs and information security awareness. <em>MIS Quarterly, 34</em>(3), 523–548. https://doi.org/10.2307/25750690</p>
+    <p class="ref">European Union. (2016). <em>Regulation (EU) 2016/679 of the European Parliament and of the Council of 27 April 2016 (General Data Protection Regulation)</em>. Official Journal of the European Union, L 119, 1–88. https://eur-lex.europa.eu/eli/reg/2016/679/oj</p>
+    <p class="ref">Hong Kong Monetary Authority. (2021). <em>Cybersecurity Fortification Initiative 2.0</em>. HKMA. https://www.hkma.gov.hk/media/eng/doc/key-functions/banking-stability/cybersecurity/20211203e1.pdf</p>
+    <p class="ref">IBM Security. (2024). <em>Cost of a data breach report 2024</em>. IBM Corporation. https://www.ibm.com/reports/data-breach</p>
+    <p class="ref">Knowles, M. S., Holton, E. F., &amp; Swanson, R. A. (1984). <em>The adult learner: A neglected species</em> (3rd ed.). Gulf Publishing.</p>
+    <p class="ref">Kolb, D. A. (1984). <em>Experiential learning: Experience as the source of learning and development</em>. Prentice Hall.</p>
+    <p class="ref">Monetary Authority of Singapore. (2021). <em>Technology risk management guidelines</em>. MAS. https://www.mas.gov.sg/regulation/guidelines/technology-risk-management-guidelines</p>
+    <p class="ref">Office of the Privacy Commissioner for Personal Data. (2022). <em>Guidance note: Data breach handling and the giving of breach notifications</em>. PCPD. https://www.pcpd.org.hk/english/resources_centre/publications/guidance/files/GN_DataBreach_Eng.pdf</p>
+    <p class="ref">Payment Card Industry Security Standards Council. (2022). <em>Payment card industry data security standard: Requirements and testing procedures, version 4.0</em>. PCI SSC. https://www.pcisecuritystandards.org/document_library</p>
+    <p class="ref">Ponemon Institute. (2023). <em>State of cybersecurity in the finance industry</em>. Ponemon Institute LLC.</p>
+    <p class="ref">Verizon. (2024). <em>2024 data breach investigations report</em>. Verizon Communications. https://www.verizon.com/business/resources/reports/dbir/</p>
+    <p class="ref">Zhang, D., Zhou, L., Briggs, R. O., &amp; Nunamaker, J. F. (2006). Instructional video in e-learning: Assessing the impact of interactive video on learning effectiveness. <em>Information &amp; Management, 43</em>(1), 15–27. https://doi.org/10.1016/j.im.2005.01.004</p>
+  </article>
+
+  <footer id="doc-footer">
+    FIN7900 Project Progress Report &nbsp;·&nbsp; GuardYourData: The FinTech Security Imperative &nbsp;·&nbsp; HKBU School of Business &nbsp;·&nbsp; March 2026
+  </footer>
+</div>
+
+<script>
+  const sections = document.querySelectorAll('article[id], div[id="cover"]');
+  const links = document.querySelectorAll('#sidenav a');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = document.querySelector(`#sidenav a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { threshold: 0.25 });
+  sections.forEach(s => obs.observe(s));
+</script>
+</body>
+</html>

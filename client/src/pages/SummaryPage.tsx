@@ -1,7 +1,9 @@
+import React from 'react'
 import { motion } from 'framer-motion'
-import { Download, FileText, ChevronRight, TrendingUp, Shield, AlertTriangle, BookOpen, Gavel, Layers } from 'lucide-react'
+import { Download, FileText, ChevronRight, TrendingUp, Shield, AlertTriangle, BookOpen, Gavel, Layers, Mouse } from 'lucide-react'
 
-const PDF_FILE  = '/pptx/The_FinTech_Security_Imperative.pdf'
+const PDF_FILE   = '/pptx/The_FinTech_Security_Imperative.pdf'
+const PPTX_FILE  = 'https://docs.google.com/presentation/d/15MaVlIH6pqg3Rp9V8_5yZt2atBhZlkz8/export/pptx'
 
 const fadeUp = {
   hidden: { opacity: 0, y: 24 },
@@ -98,7 +100,7 @@ const FINDINGS = [
 ]
 
 export default function SummaryPage() {
-  const viewerUrl = `/pdf-viewer.html?file=${encodeURIComponent(PDF_FILE)}`
+  const [slideActivated, setSlideActivated] = React.useState(false)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
@@ -133,6 +135,22 @@ export default function SummaryPage() {
           <span className="flex items-center gap-1.5"><Shield className="w-3.5 h-3.5" /> Confidential</span>
         </div>
 
+        {/* Report CTA */}
+        <div className="mt-6">
+          <a
+            href="/report/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-600/20 transition-all hover:-translate-y-0.5"
+          >
+            <FileText className="w-4 h-4" />
+            See the detailed Project Progress Report →
+          </a>
+          <p className="mt-2 text-[11px] text-slate-400 dark:text-slate-500">
+            Full research methodology, GenAI prompts, user testing rounds &amp; quality enhancements
+          </p>
+        </div>
+
         <div className="h-px bg-slate-200 dark:bg-slate-700/60 mt-8" />
       </motion.div>
 
@@ -145,19 +163,38 @@ export default function SummaryPage() {
       >
         <div className="flex items-center gap-2 mb-5">
           <div className="h-0.5 w-6 bg-brand-600" />
-          <h2 className="text-xs font-bold tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400">Slide Deck — Use ← → arrows to navigate</h2>
+          <h2 className="text-xs font-bold tracking-[0.18em] uppercase text-slate-500 dark:text-slate-400">Slide Deck — Click inside, then use ← → keys</h2>
         </div>
 
-        {/* Embedded PDF slide viewer */}
-        <div className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/60 shadow-xl dark:shadow-black/30 mb-4 bg-[#0f172a]">
+        {/* Canva Slide Deck Embed */}
+        <div
+          className="rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-700/60 shadow-xl dark:shadow-black/30 mb-2"
+          style={{ position: 'relative', paddingTop: '56.25%', background: '#1e293b' }}
+        >
           <iframe
-            src={viewerUrl}
-            className="w-full"
-            style={{ height: '560px', border: 'none' }}
-            title="The FinTech Security Imperative — Slide Deck"
+            src="https://www.canva.com/design/DAHDJg5iiCY/Gi3XhtgBU5uN3PlZuhELgg/view?embed"
+            allowFullScreen
             allow="fullscreen"
+            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+            title="The FinTech Security Imperative — Slide Deck"
           />
+          {/* Click-to-activate overlay */}
+          {!slideActivated && (
+            <div
+              className="absolute inset-0 flex flex-col items-center justify-end pb-5 cursor-pointer"
+              style={{ background: 'transparent' }}
+              onClick={() => setSlideActivated(true)}
+            >
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs font-semibold border border-white/20">
+                <Mouse className="w-3.5 h-3.5" />
+                Click presentation, then use ← → arrow keys to navigate
+              </div>
+            </div>
+          )}
         </div>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center mb-4">
+          Tip: click anywhere inside the slides first, then press ← → to flip pages
+        </p>
 
         {/* Info + download bar */}
         <div className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700/60 bg-gradient-to-br from-slate-50 to-white dark:from-slate-900 dark:to-slate-800/60 p-6">
@@ -180,12 +217,13 @@ export default function SummaryPage() {
               </div>
             </div>
             <a
-              href={PDF_FILE}
-              download
+              href={PPTX_FILE}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 px-5 py-3 bg-brand-600 hover:bg-brand-500 text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-brand-600/25 hover:-translate-y-0.5 shrink-0"
             >
               <Download className="w-4 h-4" />
-              Download PDF
+              Download PPTX
             </a>
           </div>
         </div>

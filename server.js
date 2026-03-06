@@ -17,6 +17,7 @@ try {
 
 const express  = require('express');
 const path     = require('path');
+const fs       = require('fs');
 const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
 const Database = require('better-sqlite3');
@@ -165,6 +166,19 @@ try { db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFA
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// ─── Explicit PDF/PPTX file route (must be before catch-all) ────
+app.get('/pptx/:filename', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  const filePath = path.join(__dirname, 'PPTX', filename);
+  if (!fs.existsSync(filePath)) return res.status(404).send('Not found');
+  const ct = filename.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream';
+  res.setHeader('Content-Type', ct);
+  res.setHeader('Content-Disposition', 'inline; filename="' + filename + '"');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.sendFile(filePath);
+});
+
 app.use(express.static(path.join(__dirname, 'public')));  // serve React build
 app.use('/videos', express.static(path.join(__dirname, 'Videos')));  // serve local video files
 app.use('/pptx',   express.static(path.join(__dirname, 'PPTX')));    // serve PPTX slide decks
