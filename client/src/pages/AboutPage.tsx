@@ -124,25 +124,25 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">About Me</h2>
           </div>
           <div className="card space-y-4">
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
               Computer Science graduate currently pursuing an MSc in Finance at Hong Kong Baptist University,
               specializing in Algorithmic and High Frequency Trading. Achieved a 4.0 CGPA and recipient of
               the Hong Kong Future Talents Scholarship (HKD 100K).
             </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
               I have experience on both the technology and finance side. I worked as a Financial Consultant
               at AMG Financial Group and as a Data Engineer at CedarGate Technologies, building reporting
               automation and data pipelines with Python, SQL, Excel, Airflow, PySpark, and Redshift.
             </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
               I genuinely enjoy keeping track of global markets. I follow news and pricing daily using
               Bloomberg Terminal, Reuters, and TradingView. I trade futures, crypto, and equities using
               IBKR and have a strong interest in macro strategy, rates, and interest rate trading.
             </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
               Outside work, I play poker and chess, and enjoy adventure sports.
             </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg">
+            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
               I am actively looking for trader, dealer, or data roles supporting trading and global markets
               teams. Happy to work day or night shifts. I thrive in high-intensity environments where I can
               put in 80 to 90 hours a week, take on real responsibilities, and contribute meaningfully to
