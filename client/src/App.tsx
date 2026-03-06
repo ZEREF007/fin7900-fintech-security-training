@@ -16,6 +16,7 @@ import ThankYouPage from './pages/ThankYouPage'
 import FeedbackPage from './pages/FeedbackPage'
 import LivePage from './pages/LivePage'
 import SummaryPage from './pages/SummaryPage'
+import AboutPage from './pages/AboutPage'
 
 export default function App() {
   return (
@@ -38,6 +39,7 @@ export default function App() {
             <Route path="/summary" element={<SummaryPage />} />
             <Route path="/thankyou" element={<ThankYouPage />} />
             <Route path="/admin" element={<AdminPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
         </Routes>

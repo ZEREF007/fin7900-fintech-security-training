@@ -258,6 +258,14 @@ export default function Navbar() {
               </Link>
             </li>
 
+            {/* About */}
+            <li>
+              <Link to="/about" className={clsx(baseLinkCls, isActive('/about') ? activeCls : idleCls)}>
+                <span className="text-sm">👋</span>
+                <span>About</span>
+              </Link>
+            </li>
+
           </ul>
 
           {/* Right actions — flex-1 justify-end mirrors left brand column */}
@@ -397,6 +405,19 @@ export default function Navbar() {
               <div className="p-3">
                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 mb-2">📋 Summary</p>
                 <ul className="space-y-0.5">
+                  <li>
+                    <Link to="/about"
+                      className={clsx(
+                        'flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-all',
+                        isActive('/about')
+                          ? 'bg-brand-50 dark:bg-brand-600/20 text-brand-700 dark:text-brand-300'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800',
+                      )}
+                    >
+                      <span>👋</span>
+                      <span>About</span>
+                    </Link>
+                  </li>
                   <li>
                     <Link to={SUMMARY_PATH}
                       className={clsx(
