@@ -1,0 +1,8 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/zeref/public_html/
+    - /bin/cp -r public/. $DEPLOYPATH
+    - /bin/cp server.js package.json $DEPLOYPATH
+    - export NODE_ENV=production
+    - source /home/zeref/nodevenv/GuardYourData/20/bin/activate && cd $DEPLOYPATH && npm install --production
