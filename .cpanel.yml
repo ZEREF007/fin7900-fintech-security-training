@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/guarfwvk/guardyourdata/
+    - /bin/cp -r . $DEPLOYPATH
+    - cd $DEPLOYPATH && source /home/guarfwvk/nodevenv/guardyourdata/20/bin/activate && npm install --production
