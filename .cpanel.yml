@@ -1,6 +1,6 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/guarfwvk/GuardYourData/
+    - export DEPLOYPATH=/home/zeref/GuardYourData/
     - /bin/cp -r . $DEPLOYPATH
-    - cd $DEPLOYPATH && source /home/guarfwvk/nodevenv/GuardYourData/20/bin/activate && npm install --production && npm rebuild better-sqlite3
+    - cd $DEPLOYPATH && source /home/zeref/nodevenv/GuardYourData/20/bin/activate && npm install --production && npm rebuild better-sqlite3

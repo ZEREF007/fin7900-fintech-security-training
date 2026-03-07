@@ -729,7 +729,7 @@ app.get('*', (req, res) => {
 });
 
 // ─── Start ────────────────────────────────────────────────────
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`\n  🛡️  FIN7900 Training Platform`);
   console.log(`  ─────────────────────────────────`);
   console.log(`  Local:   http://localhost:${PORT}`);
