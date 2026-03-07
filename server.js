@@ -20,10 +20,21 @@ const path     = require('path');
 const fs       = require('fs');
 const bcrypt   = require('bcryptjs');
 const jwt      = require('jsonwebtoken');
-const Database = require('better-sqlite3');
 const cors     = require('cors');
 const https    = require('https');
 const XLSX     = require('xlsx');
+
+// ─── Load SQLite (graceful failure so Express still starts) ──
+let Database;
+let DB_LOAD_ERROR = null;
+try {
+  Database = require('node-sqlite3-wasm').Database;
+} catch (e) {
+  DB_LOAD_ERROR = e.message;
+  const logPath = path.join(__dirname, 'startup-error.log');
+  fs.appendFileSync(logPath, `[${new Date().toISOString()}] DB load failed: ${e.message}\n${e.stack}\n`);
+  console.error('❌  DB load failed:', e.message);
+}
 
 // ─── Config ────────────────────────────────────────────────
 const PORT       = process.env.PORT || 3000;
@@ -32,120 +43,126 @@ const JWT_EXPIRY = '7d';
 const DB_PATH    = path.join(__dirname, 'training.db');
 
 // ─── Database Setup ─────────────────────────────────────────
-const db = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+let db = null;
+if (Database) {
+  try {
+    db = new Database(DB_PATH);
+    db.exec("PRAGMA journal_mode = WAL");
+    db.exec("PRAGMA foreign_keys = ON");
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    name         TEXT    NOT NULL,
-    email        TEXT    NOT NULL UNIQUE,
-    password     TEXT    NOT NULL,
-    role         TEXT    NOT NULL DEFAULT 'learner',
-    created_at   TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
+    db.exec(`CREATE TABLE IF NOT EXISTS users (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      name           TEXT    NOT NULL,
+      email          TEXT    NOT NULL UNIQUE,
+      password       TEXT    NOT NULL,
+      role           TEXT    NOT NULL DEFAULT 'learner',
+      email_verified INTEGER NOT NULL DEFAULT 1,
+      last_ip        TEXT    NOT NULL DEFAULT '',
+      created_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+    )`);
+    db.exec(`CREATE TABLE IF NOT EXISTS page_visits (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      page         TEXT    NOT NULL,
+      visited_at   TEXT    NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(user_id, page)
+    )`);
+    db.exec(`CREATE TABLE IF NOT EXISTS quiz_attempts (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      score        INTEGER NOT NULL,
+      total        INTEGER NOT NULL,
+      pct          INTEGER NOT NULL,
+      passed       INTEGER NOT NULL DEFAULT 0,
+      elapsed_sec  INTEGER NOT NULL DEFAULT 0,
+      filter       TEXT    NOT NULL DEFAULT 'all',
+      taken_at     TEXT    NOT NULL DEFAULT (datetime('now'))
+    )`);
+    db.exec(`CREATE TABLE IF NOT EXISTS game_attempts (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      score        INTEGER NOT NULL,
+      correct      INTEGER NOT NULL,
+      total        INTEGER NOT NULL,
+      max_streak   INTEGER NOT NULL DEFAULT 0,
+      rank         TEXT    NOT NULL DEFAULT '',
+      played_at    TEXT    NOT NULL DEFAULT (datetime('now'))
+    )`);
+    db.exec(`CREATE TABLE IF NOT EXISTS module_videos (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      module_id  TEXT    NOT NULL UNIQUE,
+      url        TEXT    NOT NULL DEFAULT '',
+      updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
+    )`);
+    db.exec(`CREATE TABLE IF NOT EXISTS otp_tokens (
+      id         INTEGER PRIMARY KEY AUTOINCREMENT,
+      email      TEXT    NOT NULL,
+      code_hash  TEXT    NOT NULL,
+      purpose    TEXT    NOT NULL DEFAULT 'login',
+      expires_at TEXT    NOT NULL,
+      used       INTEGER NOT NULL DEFAULT 0
+    )`);
+    db.exec(`CREATE TABLE IF NOT EXISTS module_completions (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      module_id    TEXT    NOT NULL,
+      mcq_score    INTEGER,
+      mcq_total    INTEGER,
+      completed_at TEXT    NOT NULL DEFAULT (datetime('now')),
+      UNIQUE(user_id, module_id)
+    )`);
+    db.exec(`CREATE TABLE IF NOT EXISTS feedback (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      name         TEXT    NOT NULL,
+      email        TEXT    NOT NULL,
+      age_group    TEXT    NOT NULL,
+      industry     TEXT    NOT NULL,
+      remarks      TEXT    NOT NULL DEFAULT '',
+      submitted_at TEXT    NOT NULL DEFAULT (datetime('now'))
+    )`);
 
-  CREATE TABLE IF NOT EXISTS page_visits (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    page         TEXT    NOT NULL,
-    visited_at   TEXT    NOT NULL DEFAULT (datetime('now')),
-    UNIQUE(user_id, page)
-  );
-
-  CREATE TABLE IF NOT EXISTS quiz_attempts (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    score        INTEGER NOT NULL,
-    total        INTEGER NOT NULL,
-    pct          INTEGER NOT NULL,
-    passed       INTEGER NOT NULL DEFAULT 0,
-    elapsed_sec  INTEGER NOT NULL DEFAULT 0,
-    filter       TEXT    NOT NULL DEFAULT 'all',
-    taken_at     TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS game_attempts (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    score        INTEGER NOT NULL,
-    correct      INTEGER NOT NULL,
-    total        INTEGER NOT NULL,
-    max_streak   INTEGER NOT NULL DEFAULT 0,
-    rank         TEXT    NOT NULL DEFAULT '',
-    played_at    TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS module_videos (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    module_id  TEXT    NOT NULL UNIQUE,
-    url        TEXT    NOT NULL DEFAULT '',
-    updated_at TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS otp_tokens (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    email      TEXT    NOT NULL,
-    code_hash  TEXT    NOT NULL,
-    purpose    TEXT    NOT NULL DEFAULT 'login',  -- 'login' | 'reset'
-    expires_at TEXT    NOT NULL,
-    used       INTEGER NOT NULL DEFAULT 0
-  );
-
-  CREATE TABLE IF NOT EXISTS module_completions (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    module_id    TEXT    NOT NULL,
-    mcq_score    INTEGER,
-    mcq_total    INTEGER,
-    completed_at TEXT    NOT NULL DEFAULT (datetime('now')),
-    UNIQUE(user_id, module_id)
-  );
-
-  CREATE TABLE IF NOT EXISTS feedback (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    name         TEXT    NOT NULL,
-    email        TEXT    NOT NULL,
-    age_group    TEXT    NOT NULL,
-    industry     TEXT    NOT NULL,
-    remarks      TEXT    NOT NULL DEFAULT '',
-    submitted_at TEXT    NOT NULL DEFAULT (datetime('now'))
-  );
-`);
-
-// Add last_ip column if it doesn't exist yet (safe migration)
+// Safe migrations for older DBs that may not have these columns
 try { db.exec("ALTER TABLE users ADD COLUMN last_ip TEXT DEFAULT ''"); } catch (_) {}
-// Add email_verified column — existing users are pre-verified (DEFAULT 1)
-try { db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 1"); } catch (_) {}
+try { db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 1"); } catch (_) {}
 
 // ─── Startup: ensure admin email is always admin ─────────────
-(function ensureAdminEmail() {
+try {
   const ADMIN_EMAIL = 'icyace007@gmail.com';
   const user = db.prepare('SELECT id, role FROM users WHERE email = ?').get(ADMIN_EMAIL);
   if (user && user.role !== 'admin') {
     db.prepare("UPDATE users SET role = 'admin' WHERE email = ?").run(ADMIN_EMAIL);
     console.log(`  ✅  Promoted ${ADMIN_EMAIL} to admin`);
   }
-})();
+} catch (e) { console.warn('  ⚠️  ensureAdminEmail skipped:', e.message); }
 
 // ─── Startup: ensure superuser ace0404@admin.com exists ────────
-(function ensureSuperuser() {
+try {
   const SU_EMAIL = 'ace0404@admin.com';
   const existing = db.prepare('SELECT id, role FROM users WHERE email = ?').get(SU_EMAIL);
   if (!existing) {
-    const hash = bcrypt.hashSync('Qwertyuiop!123', 12);
-    db.prepare('INSERT INTO users (name, email, password, role, email_verified) VALUES (?,?,?,?,1)')
-      .run('Ace Admin', SU_EMAIL, hash, 'admin');
+    const pw = 'Qwertyuiop!123';
+    const hash = bcrypt.hashSync(pw, 12);
+    db.exec(`INSERT OR IGNORE INTO users (name, email, password, role) VALUES ('Ace Admin','ace0404@admin.com','${hash}','admin')`);
     console.log('  ✅  Created superuser ace0404@admin.com');
   } else if (existing.role !== 'admin') {
-    db.prepare("UPDATE users SET role='admin' WHERE email=?").run(SU_EMAIL);
+    db.exec(`UPDATE users SET role='admin' WHERE email='ace0404@admin.com'`);
     console.log('  ✅  Promoted ace0404@admin.com to admin');
   }
-})();
+} catch (e) { console.warn('  ⚠️  ensureSuperuser skipped:', e.message); }
+
+// ─── Startup: ensure demo learner account exists ──────────────
+try {
+  const DL_EMAIL = 'demo@guardyourdata.com';
+  const dlExisting = db.prepare('SELECT id FROM users WHERE email = ?').get(DL_EMAIL);
+  if (!dlExisting) {
+    const hash = bcrypt.hashSync('Demo1234!', 12);
+    db.prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)').run('Demo User', DL_EMAIL, hash, 'learner');
+    console.log('  ✅  Created demo learner demo@guardyourdata.com');
+  }
+} catch (e) { console.warn('  ⚠️  ensureDemoLearner skipped:', e.message); }
 
 // ─── Startup: seed module video URLs from local files ────────
-(function seedVideoUrls() {
+try {
   const videos = [
     { module_id: 'overview', url: 'https://www.youtube.com/embed/_NDoHJsOKMY' },
     { module_id: 'module1',  url: 'https://www.youtube.com/embed/83HMr13zbhc' },
@@ -160,14 +177,36 @@ try { db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFA
   `);
   videos.forEach(v => insert.run(v.module_id, v.url));
   console.log('  ✅  Video URLs seeded (YouTube)');
-})();
+} catch (e) { console.warn('  ⚠️  seedVideoUrls skipped:', e.message); }
+
+  } catch (e) {
+    DB_LOAD_ERROR = DB_LOAD_ERROR || e.message;
+    const logPath = path.join(__dirname, 'startup-error.log');
+    fs.appendFileSync(logPath, `[${new Date().toISOString()}] DB init failed: ${e.message}\n${e.stack}\n`);
+    console.error('❌  DB init failed:', e.message);
+    db = null;
+  }
+}
 
 // ─── Express Setup ───────────────────────────────────────────
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ─── Explicit PDF/PPTX file route (must be before catch-all) ────
+// ─── If DB failed, serve a diagnostic error page ─────────────
+if (DB_LOAD_ERROR) {
+  app.get('*', (req, res) => {
+    res.status(500).send(`<!doctype html><html><head><title>Server Error</title></head><body style="font-family:monospace;padding:2rem;background:#fff;color:#c00">
+      <h2>🔴 Server Startup Error</h2>
+      <p>The database module failed to load. Check that <code>npm install</code> was run on the server.</p>
+      <pre style="background:#fee;padding:1rem;border-radius:8px">${DB_LOAD_ERROR}</pre>
+      <p>Check <code>startup-error.log</code> in the project folder for full details.</p>
+    </body></html>`);
+  });
+  app.listen(PORT, '0.0.0.0', () => console.error(`❌  Running in ERROR mode on port ${PORT}`));
+  return; // stop here — don't register any real routes
+}
+
 app.get('/pptx/:filename', (req, res) => {
   const filename = path.basename(req.params.filename);
   const filePath = path.join(__dirname, 'PPTX', filename);
@@ -225,7 +264,7 @@ app.post('/api/auth/register', (req, res) => {
   const role = cleanEmail === 'icyace007@gmail.com' ? 'admin' : 'learner';
 
   const hash = bcrypt.hashSync(password, 12);  // 12 rounds for stronger hashing
-  const info = db.prepare('INSERT INTO users (name, email, password, role, email_verified) VALUES (?, ?, ?, ?, 1)')
+  const info = db.prepare('INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)')
                  .run(name.trim(), cleanEmail, hash, role);
 
   // Demo mode: generate a display code (cosmetic only) and issue JWT immediately
@@ -671,7 +710,7 @@ app.post('/api/admin/seed', requireAuth, (req, res) => {
   const adminCount = db.prepare("SELECT COUNT(*) as c FROM users WHERE role='admin'").get().c;
   if (adminCount > 0) return res.status(403).json({ error: 'Admins already exist' });
   db.prepare('UPDATE users SET role = ? WHERE id = ?').run('admin', req.user.id);
-  const token = require('jsonwebtoken').sign(
+  const token = jwt.sign(
     { id: req.user.id, email: req.user.email, name: req.user.name, role: 'admin' },
     JWT_SECRET, { expiresIn: JWT_EXPIRY }
   );

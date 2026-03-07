@@ -42,18 +42,14 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    name: Trigger Render Deploy
+    name: Deploy to cPanel
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: Deploy to Render
-        if: env.RENDER_DEPLOY_HOOK_URL != ''
-        run: curl -s "$RENDER_DEPLOY_HOOK_URL"
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
-
-      - name: Auto-deploy note
-        if: env.RENDER_DEPLOY_HOOK_URL == ''
-        run: echo "ℹ️ Add RENDER_DEPLOY_HOOK_URL as a GitHub secret to trigger Render deployments automatically."
-        env:
-          RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      - name: Trigger cPanel Git pull + deploy
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "Authorization: cpanel zeref:${{ secrets.CPANEL_API_TOKEN }}" \
+            "https://guardyourdata.me:2083/execute/VersionControl/update?repository_root=%2Fhome%2Fzeref%2Frepositories%2FGuardYourData")
+          echo "cPanel response: $STATUS"
+          if [ "$STATUS" != "200" ]; then echo "Deploy may have failed (HTTP $STATUS)"; fi

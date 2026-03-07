@@ -1,12 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
-
-function ScrollToTop() {
-  const { pathname } = useLocation()
-  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
-  return null
-}
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import ModulePage from './pages/ModulePage'
@@ -24,6 +18,12 @@ import FeedbackPage from './pages/FeedbackPage'
 import LivePage from './pages/LivePage'
 import SummaryPage from './pages/SummaryPage'
 import AboutPage from './pages/AboutPage'
+
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => { window.scrollTo(0, 0) }, [pathname])
+  return null
+}
 
 export default function App() {
   return (

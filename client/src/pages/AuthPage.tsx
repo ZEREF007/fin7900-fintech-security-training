@@ -56,6 +56,8 @@ export default function AuthPage() {
       } else {
         setError(res.error || 'Invalid credentials')
       }
+    } catch {
+      setError('Cannot reach the server. Please check your connection or try again.')
     } finally { setLoading(false) }
   }
 
@@ -79,6 +81,8 @@ export default function AuthPage() {
         const u = JSON.parse(localStorage.getItem('user') || '{}')
         nav(u.role === 'admin' ? '/admin' : '/')
       }
+    } catch {
+      setError('Cannot reach the server. Please check your connection or try again.')
     } finally { setLoading(false) }
   }
 
