@@ -1,4 +1,4 @@
-name: Build & Deploy
+name: Build & Test
 
 on:
   push:
@@ -38,18 +38,3 @@ jobs:
         env:
           PORT: 3001
           JWT_SECRET: ci-test-secret
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    name: Deploy to cPanel
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    steps:
-      - name: Trigger cPanel Git pull + deploy
-        run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            -H "Authorization: cpanel zeref:${{ secrets.CPANEL_API_TOKEN }}" \
-            "https://guardyourdata.me:2083/execute/VersionControl/update?repository_root=%2Fhome%2Fzeref%2Frepositories%2FGuardYourData")
-          echo "cPanel response: $STATUS"
-          if [ "$STATUS" != "200" ]; then echo "Deploy may have failed (HTTP $STATUS)"; fi

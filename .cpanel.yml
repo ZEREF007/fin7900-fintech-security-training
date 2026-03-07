@@ -1,4 +1,0 @@
----
-deployment:
-  tasks:
-    - source /home/zeref/nodevenv/GuardYourData/20/bin/activate && npm install --production
