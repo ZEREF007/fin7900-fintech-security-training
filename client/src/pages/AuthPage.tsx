@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Shield, Eye, EyeOff, CheckCircle, XCircle, Loader2, KeyRound, RotateCcw, ShieldCheck, Mail } from 'lucide-react'
@@ -17,6 +17,22 @@ const checks = [
 
 type Mode = 'login' | 'register' | 'forgot' | 'forgot-reset' | 'otp-verify' | 'registered'
 
+function DemoCodeBox({ code }: { code: string }) {
+  if (!code) return null
+  return (
+    <div className="mb-4 rounded-xl overflow-hidden border border-indigo-500/40">
+      <div className="bg-indigo-900/60 px-4 py-2 flex items-center gap-2">
+        <span className="text-base">📋</span>
+        <p className="text-indigo-300 text-xs font-semibold uppercase tracking-wide">Demo Mode — Verification Code</p>
+      </div>
+      <div className="bg-slate-900/80 px-4 py-4 text-center">
+        <p className="text-indigo-200 font-mono text-3xl font-black tracking-[0.5em] select-all">{code}</p>
+        <p className="text-slate-500 text-xs mt-2">Copy and paste this code into the field below</p>
+      </div>
+    </div>
+  )
+}
+
 export default function AuthPage() {
   const [mode, setMode]            = useState<Mode>('login')
   const [tab,  setTab]             = useState<'login' | 'register'>('login')
@@ -31,9 +47,17 @@ export default function AuthPage() {
   const [pendingEmail, setPending] = useState('')
   const [loading, setLoading]      = useState(false)
   const [error, setError]          = useState('')
+  const [redirectRole, setRedirectRole] = useState<'admin' | 'learner'>('learner')
   const { register, completeLogin, login } = useAuth()
   const { isDark } = useTheme()
   const nav = useNavigate()
+
+  // Clean redirect on unmount — avoids updating state on unmounted component
+  useEffect(() => {
+    if (mode !== 'registered') return
+    const t = setTimeout(() => nav(redirectRole === 'admin' ? '/admin' : '/'), 2500)
+    return () => clearTimeout(t)
+  }, [mode, redirectRole, nav])
 
   const resetState = (m: Mode) => { setMode(m); setError(''); setOtp(''); setDemoCode('') }
   const switchTab  = (t: 'login' | 'register') => { setTab(t); resetState(t); setName(''); setEmail(''); setPassword('') }
@@ -68,10 +92,8 @@ export default function AuthPage() {
       const res = await register(name, email, password)
       if (!res.ok) return setError(res.error ?? 'Something went wrong')
       if (res.auto_login) {
-        // Registered + auto-logged in — show demo code then redirect
-        setDemoCode(res.demo_code || '')
+        setRedirectRole(res.user?.role === 'admin' ? 'admin' : 'learner')
         setMode('registered')
-        setTimeout(() => nav(res.user?.role === 'admin' ? '/admin' : '/'), 3200)
       } else if (res.pending) {
         setDemoCode(res.demo_code || '')
         setPending(res.email || email)
@@ -156,21 +178,6 @@ export default function AuthPage() {
       ? 'bg-slate-800/60 border-slate-700/50 text-white placeholder:text-slate-500'
       : 'bg-white border-slate-300 text-slate-900 placeholder:text-slate-400'
   )
-
-  const DemoCodeBox = ({ code }: { code: string }) => code ? (
-    <div className="mb-4 rounded-xl overflow-hidden border border-indigo-500/40">
-      <div className="bg-indigo-900/60 px-4 py-2 flex items-center gap-2">
-        <span className="text-base">📋</span>
-        <p className="text-indigo-300 text-xs font-semibold uppercase tracking-wide">Demo Mode — Verification Code</p>
-      </div>
-      <div className="bg-slate-900/80 px-4 py-4 text-center">
-        <p className="text-indigo-200 font-mono text-3xl font-black tracking-[0.5em] select-all">{code}</p>
-        <p className="text-slate-500 text-xs mt-2">Copy and paste this code into the field below</p>
-      </div>
-    </div>
-  ) : null
-
-
 
   return (
     <div className={clsx('auth-page-wrap bg-slate-950 min-h-[calc(100vh-3.5rem)] flex items-center justify-center px-4 py-12', isDark && 'dark')}>
@@ -322,23 +329,11 @@ export default function AuthPage() {
                     <CheckCircle className="w-8 h-8 text-emerald-400" />
                   </div>
                   <h2 className="text-white font-bold text-xl">Account Created!</h2>
-                  <p className="text-slate-400 text-sm mt-1.5">Welcome aboard. Here's your demo session code:</p>
+                  <p className="text-slate-400 text-sm mt-1.5">You're all set. Taking you in now…</p>
                 </div>
-                {demoCode && (
-                  <div className="mb-5 rounded-xl overflow-hidden border border-indigo-500/40">
-                    <div className="bg-indigo-900/60 px-4 py-2 flex items-center gap-2">
-                      <span className="text-base">📋</span>
-                      <p className="text-indigo-300 text-xs font-semibold uppercase tracking-wide">Demo Mode — Session Code</p>
-                    </div>
-                    <div className="bg-slate-900/80 px-4 py-4 text-center">
-                      <p className="text-indigo-200 font-mono text-3xl font-black tracking-[0.5em] select-all">{demoCode}</p>
-                      <p className="text-slate-500 text-xs mt-2">In a real deployment this would be emailed to you</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm font-medium">
+                <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm font-medium mt-4">
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Logging you in automatically…</span>
+                  <span>Logging you in…</span>
                 </div>
               </motion.div>
             )}
