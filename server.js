@@ -32,8 +32,20 @@ const JWT_EXPIRY = '7d';
 const SUPERUSER_EMAIL = 'ace0404@admin.com';
 const SUPERUSER_PASSWORD = 'Qwerty1!';
 const SUPERUSER_NAME = 'Ace Admin';
+const SECONDARY_ADMIN_EMAIL = 'ace.raj@icloud.com';
+const SECONDARY_ADMIN_PASSWORD = 'Qwertyuiop1!';
+const SECONDARY_ADMIN_NAME = 'Ace Raj';
 const DEMO_EMAIL = 'demo@guardyourdata.com';
 const DEMO_PASSWORD = 'Demo1234!';
+const BOOTSTRAP_USERS = [
+  { name: SUPERUSER_NAME, email: SUPERUSER_EMAIL, password: SUPERUSER_PASSWORD, role: 'admin' },
+  { name: SECONDARY_ADMIN_NAME, email: SECONDARY_ADMIN_EMAIL, password: SECONDARY_ADMIN_PASSWORD, role: 'admin' },
+  { name: 'Demo User', email: DEMO_EMAIL, password: DEMO_PASSWORD, role: 'learner' },
+];
+const RESERVED_ADMIN_EMAILS = new Set([
+  'icyace007@gmail.com',
+  ...BOOTSTRAP_USERS.filter(u => u.role === 'admin').map(u => u.email.toLowerCase().trim()),
+]);
 
 // ─── MySQL Connection Pool ──────────────────────────────────────
 let pool = null;
@@ -41,6 +53,16 @@ let DB_LOAD_ERROR = null;
 const LOCAL_AUTH_DIR = path.join(__dirname, 'data');
 const LOCAL_AUTH_FILE = path.join(LOCAL_AUTH_DIR, 'auth-users.json');
 const LOCAL_FEEDBACK_FILE = path.join(LOCAL_AUTH_DIR, 'feedback.json');
+const LOCAL_VIDEO_FILE = path.join(LOCAL_AUTH_DIR, 'module-videos.json');
+const DEFAULT_VIDEO_ROWS = [
+  { module_id: 'overview', url: 'https://www.youtube.com/embed/_NDoHJsOKMY' },
+  { module_id: 'module1',  url: 'https://www.youtube.com/embed/83HMr13zbhc' },
+  { module_id: 'module2',  url: 'https://www.youtube.com/embed/IwDSwe7OtJg' },
+  { module_id: 'module3',  url: 'https://www.youtube.com/embed/s2SfPN3atlY' },
+  { module_id: 'module4',  url: 'https://www.youtube.com/embed/7g9YwY5N1KU' },
+  { module_id: 'module5',  url: 'https://www.youtube.com/embed/QAWKgRVft80' },
+];
+const DEFAULT_VIDEO_ORDER = DEFAULT_VIDEO_ROWS.map(v => v.module_id);
 
 function createDbUnavailableError() {
   const err = new Error('Database unavailable');
@@ -55,6 +77,10 @@ function isDbReady() {
 async function dbExecute(sql, params = []) {
   if (!pool) throw createDbUnavailableError();
   return pool.execute(sql, params);
+}
+
+function isReservedAdminEmail(email) {
+  return RESERVED_ADMIN_EMAILS.has(String(email || '').toLowerCase().trim());
 }
 
 function ensureLocalUserShape(user) {
@@ -90,24 +116,16 @@ function makeLocalUser({ id, name, email, password, role = 'learner' }) {
 function ensureLocalAuthStore() {
   if (!fs.existsSync(LOCAL_AUTH_DIR)) fs.mkdirSync(LOCAL_AUTH_DIR, { recursive: true });
   if (!fs.existsSync(LOCAL_AUTH_FILE)) {
+    const users = BOOTSTRAP_USERS.map((seedUser, idx) => makeLocalUser({
+      id: idx + 1,
+      name: seedUser.name,
+      email: seedUser.email,
+      password: bcrypt.hashSync(seedUser.password, 12),
+      role: seedUser.role,
+    }));
     const seed = {
-      nextId: 3,
-      users: [
-        makeLocalUser({
-          id: 1,
-          name: SUPERUSER_NAME,
-          email: SUPERUSER_EMAIL,
-          password: bcrypt.hashSync(SUPERUSER_PASSWORD, 12),
-          role: 'admin',
-        }),
-        makeLocalUser({
-          id: 2,
-          name: 'Demo User',
-          email: DEMO_EMAIL,
-          password: bcrypt.hashSync(DEMO_PASSWORD, 12),
-          role: 'learner',
-        })
-      ],
+      nextId: users.length + 1,
+      users,
     };
     fs.writeFileSync(LOCAL_AUTH_FILE, JSON.stringify(seed, null, 2), 'utf8');
   }
@@ -180,19 +198,14 @@ function ensureLocalBootstrapUsers() {
     }
   };
 
-  ensureUser({
-    email: SUPERUSER_EMAIL,
-    name: SUPERUSER_NAME,
-    role: 'admin',
-    password: SUPERUSER_PASSWORD
-  });
-
-  ensureUser({
-    email: DEMO_EMAIL,
-    name: 'Demo User',
-    role: 'learner',
-    password: DEMO_PASSWORD
-  });
+  for (const u of BOOTSTRAP_USERS) {
+    ensureUser({
+      email: u.email,
+      name: u.name,
+      role: u.role,
+      password: u.password,
+    });
+  }
 
   const maxId = store.users.reduce((m, u) => Math.max(m, Number(u.id) || 0), 0);
   if (store.nextId <= maxId) {
@@ -271,6 +284,251 @@ function writeLocalFeedbackStore(store) {
 function listLocalFeedbackRows() {
   const store = readLocalFeedbackStore();
   return [...store.feedback].sort((a, b) => String(b.submitted_at).localeCompare(String(a.submitted_at)));
+}
+
+function sortVideoRows(rows) {
+  return [...rows].sort((a, b) => {
+    const ai = DEFAULT_VIDEO_ORDER.indexOf(a.module_id);
+    const bi = DEFAULT_VIDEO_ORDER.indexOf(b.module_id);
+    if (ai !== -1 || bi !== -1) {
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    }
+    return String(a.module_id).localeCompare(String(b.module_id));
+  });
+}
+
+function ensureLocalVideoStore() {
+  if (!fs.existsSync(LOCAL_AUTH_DIR)) fs.mkdirSync(LOCAL_AUTH_DIR, { recursive: true });
+  if (!fs.existsSync(LOCAL_VIDEO_FILE)) {
+    const now = toIsoNow();
+    fs.writeFileSync(
+      LOCAL_VIDEO_FILE,
+      JSON.stringify({
+        videos: DEFAULT_VIDEO_ROWS.map(v => ({ module_id: v.module_id, url: v.url, updated_at: now })),
+      }, null, 2),
+      'utf8'
+    );
+  }
+}
+
+function readLocalVideoStore() {
+  ensureLocalVideoStore();
+  try {
+    const raw = fs.readFileSync(LOCAL_VIDEO_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.videos)) throw new Error('Invalid local video store shape');
+
+    let changed = false;
+    const cleaned = parsed.videos
+      .filter(v => v && typeof v.module_id === 'string')
+      .map(v => ({
+        module_id: v.module_id,
+        url: typeof v.url === 'string' ? v.url : '',
+        updated_at: typeof v.updated_at === 'string' ? v.updated_at : toIsoNow(),
+      }));
+
+    const existing = new Set(cleaned.map(v => v.module_id));
+    for (const v of DEFAULT_VIDEO_ROWS) {
+      if (!existing.has(v.module_id)) {
+        cleaned.push({ module_id: v.module_id, url: v.url, updated_at: toIsoNow() });
+        changed = true;
+      }
+    }
+
+    const finalStore = { videos: sortVideoRows(cleaned) };
+    if (changed || finalStore.videos.length !== parsed.videos.length) {
+      writeLocalVideoStore(finalStore);
+    }
+    return finalStore;
+  } catch {
+    const reset = {
+      videos: DEFAULT_VIDEO_ROWS.map(v => ({ module_id: v.module_id, url: v.url, updated_at: toIsoNow() })),
+    };
+    writeLocalVideoStore(reset);
+    return reset;
+  }
+}
+
+function writeLocalVideoStore(store) {
+  ensureLocalVideoStore();
+  const tmp = LOCAL_VIDEO_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify({ videos: sortVideoRows(store.videos || []) }, null, 2), 'utf8');
+  fs.renameSync(tmp, LOCAL_VIDEO_FILE);
+}
+
+function listLocalVideoRows() {
+  return readLocalVideoStore().videos;
+}
+
+function getLocalVideoUrl(moduleId) {
+  const rows = listLocalVideoRows();
+  return rows.find(v => v.module_id === moduleId)?.url || '';
+}
+
+function saveLocalVideoUrl(moduleId, url) {
+  const cleanModuleId = String(moduleId || '').trim();
+  const cleanUrl = String(url || '').trim();
+  if (!cleanModuleId) return;
+  const store = readLocalVideoStore();
+  const idx = store.videos.findIndex(v => v.module_id === cleanModuleId);
+  const row = { module_id: cleanModuleId, url: cleanUrl, updated_at: toIsoNow() };
+  if (idx === -1) store.videos.push(row);
+  else store.videos[idx] = row;
+  writeLocalVideoStore(store);
+}
+
+function calcBestNumber(values) {
+  if (!Array.isArray(values) || !values.length) return null;
+  return values.reduce((best, raw) => {
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return best;
+    return best === null ? n : Math.max(best, n);
+  }, null);
+}
+
+function listLocalAdminUsers() {
+  const store = readLocalAuthStore();
+  return [...store.users]
+    .map(ensureLocalUserShape)
+    .map(u => {
+      const visits = Array.isArray(u.visits) ? u.visits : [];
+      const quizHistory = Array.isArray(u.quizHistory) ? u.quizHistory : [];
+      const gameHistory = Array.isArray(u.gameHistory) ? u.gameHistory : [];
+      return {
+        id: Number(u.id),
+        name: u.name || '',
+        email: (u.email || '').toLowerCase().trim(),
+        role: u.role || 'learner',
+        created_at: u.created_at || toIsoNow(),
+        last_ip: u.last_ip || '',
+        pages_visited: visits.length,
+        best_quiz_pct: calcBestNumber(quizHistory.map(q => q?.pct)),
+        quiz_attempts: quizHistory.length,
+        best_game_score: calcBestNumber(gameHistory.map(g => g?.score)),
+      };
+    })
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
+}
+
+function localDateKey(raw) {
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString().slice(0, 10);
+}
+
+function buildLocalRegTimeline(users, days = 14) {
+  const utcNow = new Date();
+  const start = new Date(Date.UTC(utcNow.getUTCFullYear(), utcNow.getUTCMonth(), utcNow.getUTCDate()));
+  start.setUTCDate(start.getUTCDate() - (days - 1));
+
+  const keys = [];
+  const counts = new Map();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(start);
+    d.setUTCDate(start.getUTCDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    keys.push(key);
+    counts.set(key, 0);
+  }
+
+  for (const user of users) {
+    const key = localDateKey(user.created_at);
+    if (key && counts.has(key)) counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  return keys.map(day => ({ day, count: counts.get(day) || 0 }));
+}
+
+function buildLocalAdminStats() {
+  const store = readLocalAuthStore();
+  const users = [...store.users].map(ensureLocalUserShape);
+  const userRows = listLocalAdminUsers();
+
+  let totalVisits = 0;
+  let totalQuizzes = 0;
+  let totalGames = 0;
+  let passCount = 0;
+  let quizScoreTotal = 0;
+  let gameScoreTotal = 0;
+
+  const pageVisits = new Map();
+  const pageUnique = new Map();
+  const moduleUsers = new Map();
+  const scoreBuckets = { below40: 0, p40_70: 0, p70_90: 0, above90: 0 };
+
+  for (const user of users) {
+    const uid = Number(user.id);
+    const visits = Array.isArray(user.visits) ? user.visits : [];
+    const quizHistory = Array.isArray(user.quizHistory) ? user.quizHistory : [];
+    const gameHistory = Array.isArray(user.gameHistory) ? user.gameHistory : [];
+    const moduleCompletions = Array.isArray(user.moduleCompletions) ? user.moduleCompletions : [];
+
+    totalVisits += visits.length;
+    totalQuizzes += quizHistory.length;
+    totalGames += gameHistory.length;
+
+    for (const v of visits) {
+      const page = String(v?.page || '').trim();
+      if (!page) continue;
+      pageVisits.set(page, (pageVisits.get(page) || 0) + 1);
+      if (!pageUnique.has(page)) pageUnique.set(page, new Set());
+      pageUnique.get(page).add(uid);
+    }
+
+    for (const q of quizHistory) {
+      const pct = Number(q?.pct) || 0;
+      quizScoreTotal += pct;
+      passCount += q?.passed ? 1 : 0;
+      if (pct < 40) scoreBuckets.below40 += 1;
+      else if (pct < 70) scoreBuckets.p40_70 += 1;
+      else if (pct < 90) scoreBuckets.p70_90 += 1;
+      else scoreBuckets.above90 += 1;
+    }
+
+    for (const g of gameHistory) {
+      gameScoreTotal += Number(g?.score) || 0;
+    }
+
+    for (const m of moduleCompletions) {
+      const moduleId = String(m?.module_id || '').trim();
+      if (!moduleId) continue;
+      if (!moduleUsers.has(moduleId)) moduleUsers.set(moduleId, new Set());
+      moduleUsers.get(moduleId).add(uid);
+    }
+  }
+
+  const feedbackStore = readLocalFeedbackStore();
+  const pageStats = [...pageVisits.entries()]
+    .map(([page, visits]) => ({ page, visits }))
+    .sort((a, b) => b.visits - a.visits || a.page.localeCompare(b.page));
+  const pageUniq = [...pageUnique.entries()]
+    .map(([page, ids]) => ({ page, uniq_users: ids.size }))
+    .sort((a, b) => b.uniq_users - a.uniq_users || a.page.localeCompare(b.page));
+  const moduleSummary = [...moduleUsers.entries()]
+    .map(([module_id, ids]) => ({ module_id, users_completed: ids.size }))
+    .sort((a, b) => String(a.module_id).localeCompare(String(b.module_id)));
+
+  return {
+    totals: {
+      users: users.length,
+      visits: totalVisits,
+      quizzes: totalQuizzes,
+      games: totalGames,
+    },
+    rates: {
+      passRate: totalQuizzes ? Math.round((100 * passCount) / totalQuizzes) : 0,
+      avgQuizPct: totalQuizzes ? Math.round(quizScoreTotal / totalQuizzes) : 0,
+      avgGameScore: totalGames ? Math.round(gameScoreTotal / totalGames) : 0,
+    },
+    pageStats,
+    pageUniq,
+    recentUsers: userRows.slice(0, 10),
+    regTimeline: buildLocalRegTimeline(users),
+    scoreBuckets,
+    moduleSummary,
+    totalFeedback: feedbackStore.feedback.length,
+  };
 }
 
 async function initDb() {
@@ -374,59 +632,45 @@ async function initDb() {
     try { await dbExecute("ALTER TABLE users ADD COLUMN last_ip VARCHAR(100) DEFAULT ''"); } catch (_) {}
     try { await dbExecute("ALTER TABLE users ADD COLUMN email_verified TINYINT(1) DEFAULT 1"); } catch (_) {}
 
-    // Ensure admin email is always admin
+    // Ensure any reserved admin email already in DB remains admin.
     try {
-      const ADMIN_EMAIL = 'icyace007@gmail.com';
-      const [rows] = await dbExecute('SELECT id, role FROM users WHERE email = ?', [ADMIN_EMAIL]);
-      if (rows.length && rows[0].role !== 'admin') {
-        await dbExecute("UPDATE users SET role = 'admin' WHERE email = ?", [ADMIN_EMAIL]);
-        console.log(`  \u2705  Promoted ${ADMIN_EMAIL} to admin`);
+      for (const adminEmail of RESERVED_ADMIN_EMAILS) {
+        const [rows] = await dbExecute('SELECT id, role FROM users WHERE email = ?', [adminEmail]);
+        if (rows.length && rows[0].role !== 'admin') {
+          await dbExecute("UPDATE users SET role = 'admin' WHERE email = ?", [adminEmail]);
+          console.log(`  \u2705  Promoted ${adminEmail} to admin`);
+        }
       }
-    } catch (e) { console.warn('  \u26a0\ufe0f  ensureAdminEmail skipped:', e.message); }
+    } catch (e) { console.warn('  \u26a0\ufe0f  ensureAdminEmails skipped:', e.message); }
 
-    // Ensure superuser ace0404@admin.com
+    // Ensure bootstrap accounts always exist with expected roles.
     try {
-      const [rows] = await dbExecute('SELECT id, role FROM users WHERE email = ?', [SUPERUSER_EMAIL]);
-      const hash = bcrypt.hashSync(SUPERUSER_PASSWORD, 12);
-      if (!rows.length) {
-        await dbExecute(
-          "INSERT IGNORE INTO users (name, email, password, role, email_verified) VALUES (?, ?, ?, 'admin', 1)",
-          [SUPERUSER_NAME, SUPERUSER_EMAIL, hash]
-        );
-        console.log(`  \u2705  Created superuser ${SUPERUSER_EMAIL}`);
-      } else {
-        await dbExecute(
-          "UPDATE users SET role='admin', email_verified=1, name=?, password=? WHERE email=?",
-          [SUPERUSER_NAME, hash, SUPERUSER_EMAIL]
-        );
-        console.log(`  \u2705  Ensured superuser ${SUPERUSER_EMAIL} (admin + password synced)`);
-      }
-    } catch (e) { console.warn('  \u26a0\ufe0f  ensureSuperuser skipped:', e.message); }
+      for (const account of BOOTSTRAP_USERS) {
+        const [rows] = await dbExecute('SELECT id FROM users WHERE email = ?', [account.email]);
+        if (!rows.length) {
+          const hash = bcrypt.hashSync(account.password, 12);
+          await dbExecute(
+            'INSERT IGNORE INTO users (name, email, password, role, email_verified) VALUES (?, ?, ?, ?, 1)',
+            [account.name, account.email, hash, account.role]
+          );
+          console.log(`  \u2705  Created bootstrap user ${account.email} (${account.role})`);
+          continue;
+        }
 
-    // Ensure demo learner
-    try {
-      const [rows] = await dbExecute('SELECT id FROM users WHERE email = ?', [DEMO_EMAIL]);
-      if (!rows.length) {
-        const hash = bcrypt.hashSync(DEMO_PASSWORD, 12);
-        await dbExecute(
-          'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
-          ['Demo User', DEMO_EMAIL, hash, 'learner']
-        );
-        console.log(`  \u2705  Created demo learner ${DEMO_EMAIL}`);
+        if (account.role === 'admin') {
+          const hash = bcrypt.hashSync(account.password, 12);
+          await dbExecute(
+            "UPDATE users SET role='admin', email_verified=1, name=?, password=? WHERE email=?",
+            [account.name, hash, account.email]
+          );
+          console.log(`  \u2705  Ensured admin ${account.email} (role + password synced)`);
+        }
       }
-    } catch (e) { console.warn('  \u26a0\ufe0f  ensureDemoLearner skipped:', e.message); }
+    } catch (e) { console.warn('  \u26a0\ufe0f  ensureBootstrapUsers skipped:', e.message); }
 
     // Seed video URLs
     try {
-      const videos = [
-        { module_id: 'overview', url: 'https://www.youtube.com/embed/_NDoHJsOKMY' },
-        { module_id: 'module1',  url: 'https://www.youtube.com/embed/83HMr13zbhc' },
-        { module_id: 'module2',  url: 'https://www.youtube.com/embed/IwDSwe7OtJg' },
-        { module_id: 'module3',  url: 'https://www.youtube.com/embed/s2SfPN3atlY' },
-        { module_id: 'module4',  url: 'https://www.youtube.com/embed/7g9YwY5N1KU' },
-        { module_id: 'module5',  url: 'https://www.youtube.com/embed/QAWKgRVft80' },
-      ];
-      for (const v of videos) {
+      for (const v of DEFAULT_VIDEO_ROWS) {
         await dbExecute(
           'INSERT INTO module_videos (module_id, url) VALUES (?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url), updated_at = NOW()',
           [v.module_id, v.url]
@@ -442,6 +686,7 @@ async function initDb() {
     console.error('\u274c  DB init failed:', e.message);
     pool = null;
     ensureLocalBootstrapUsers();
+    ensureLocalVideoStore();
   }
 }
 
@@ -536,7 +781,7 @@ app.post('/api/auth/register', async (req, res) => {
   if (pwErr) return res.status(400).json({ error: pwErr });
 
   const cleanEmail = email.toLowerCase().trim();
-  const role = (cleanEmail === 'icyace007@gmail.com' || cleanEmail === SUPERUSER_EMAIL) ? 'admin' : 'learner';
+  const role = isReservedAdminEmail(cleanEmail) ? 'admin' : 'learner';
   const hash = bcrypt.hashSync(password, 12);
 
   // Fallback path for cPanel hosts where MySQL is not configured yet.
@@ -921,6 +1166,9 @@ app.post('/api/progress/module-complete', requireAuth, async (req, res) => {
 
 // GET /api/videos/:moduleId  — public: get video URL for a module
 app.get('/api/videos/:moduleId', async (req, res) => {
+  if (!isDbReady()) {
+    return res.json({ url: getLocalVideoUrl(req.params.moduleId) });
+  }
   const [rows] = await dbExecute('SELECT url FROM module_videos WHERE module_id = ?', [req.params.moduleId]);
   res.json({ url: rows.length ? rows[0].url : '' });
 });
@@ -930,6 +1178,10 @@ app.post('/api/admin/videos/:moduleId', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   const { url } = req.body || {};
   if (url === undefined) return res.status(400).json({ error: 'url required' });
+  if (!isDbReady()) {
+    saveLocalVideoUrl(req.params.moduleId, url);
+    return res.json({ ok: true });
+  }
   await dbExecute(
     'INSERT INTO module_videos (module_id, url) VALUES (?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url), updated_at = NOW()',
     [req.params.moduleId, url.trim()]
@@ -940,6 +1192,9 @@ app.post('/api/admin/videos/:moduleId', requireAuth, async (req, res) => {
 // GET /api/admin/videos  — admin: get all video configs
 app.get('/api/admin/videos', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  if (!isDbReady()) {
+    return res.json({ videos: listLocalVideoRows() });
+  }
   const [rows] = await dbExecute('SELECT module_id, url, updated_at FROM module_videos ORDER BY module_id');
   res.json({ videos: rows });
 });
@@ -947,6 +1202,9 @@ app.get('/api/admin/videos', requireAuth, async (req, res) => {
 // ─── Admin Route (all users summary) ───────────────────────
 app.get('/api/admin/users', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  if (!isDbReady()) {
+    return res.json({ users: listLocalAdminUsers() });
+  }
 
   const [users] = await dbExecute(`
     SELECT u.id, u.name, u.email, u.role, u.created_at,
@@ -964,6 +1222,9 @@ app.get('/api/admin/users', requireAuth, async (req, res) => {
 // GET /api/admin/stats  — aggregate stats for admin dashboard
 app.get('/api/admin/stats', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+  if (!isDbReady()) {
+    return res.json(buildLocalAdminStats());
+  }
 
   const [[totU]]  = await dbExecute('SELECT COUNT(*) as c FROM users');
   const [[totV]]  = await dbExecute('SELECT COUNT(*) as c FROM page_visits');
@@ -1010,6 +1271,17 @@ app.post('/api/admin/promote', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   const { userId } = req.body || {};
   if (!userId) return res.status(400).json({ error: 'userId required' });
+
+  if (!isDbReady()) {
+    const targetId = Number(userId);
+    const store = readLocalAuthStore();
+    const target = store.users.find(u => Number(u.id) === targetId);
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    target.role = 'admin';
+    writeLocalAuthStore(store);
+    return res.json({ ok: true });
+  }
+
   await dbExecute('UPDATE users SET role = ? WHERE id = ?', ['admin', userId]);
   res.json({ ok: true });
 });
@@ -1019,6 +1291,20 @@ app.delete('/api/admin/users/:id', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   const targetId = parseInt(req.params.id, 10);
   if (!targetId || targetId === req.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
+
+  if (!isDbReady()) {
+    const store = readLocalAuthStore();
+    const idx = store.users.findIndex(u => Number(u.id) === targetId);
+    if (idx === -1) return res.status(404).json({ error: 'User not found' });
+    const target = ensureLocalUserShape(store.users[idx]);
+    if (target.role === 'admin' || isReservedAdminEmail(target.email)) {
+      return res.status(403).json({ error: 'Cannot delete another admin' });
+    }
+    store.users.splice(idx, 1);
+    writeLocalAuthStore(store);
+    return res.json({ ok: true });
+  }
+
   const [rows] = await dbExecute('SELECT role FROM users WHERE id = ?', [targetId]);
   if (!rows.length) return res.status(404).json({ error: 'User not found' });
   if (rows[0].role === 'admin') return res.status(403).json({ error: 'Cannot delete another admin' });
@@ -1031,7 +1317,21 @@ app.post('/api/admin/demote', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   const { userId } = req.body || {};
   if (!userId) return res.status(400).json({ error: 'userId required' });
-  if (userId === req.user.id) return res.status(400).json({ error: 'Cannot demote yourself' });
+  if (Number(userId) === Number(req.user.id)) return res.status(400).json({ error: 'Cannot demote yourself' });
+
+  if (!isDbReady()) {
+    const targetId = Number(userId);
+    const store = readLocalAuthStore();
+    const target = store.users.find(u => Number(u.id) === targetId);
+    if (!target) return res.status(404).json({ error: 'User not found' });
+    if (isReservedAdminEmail(target.email)) {
+      return res.status(403).json({ error: 'Cannot demote protected admin account' });
+    }
+    target.role = 'learner';
+    writeLocalAuthStore(store);
+    return res.json({ ok: true });
+  }
+
   await dbExecute("UPDATE users SET role = 'learner' WHERE id = ?", [userId]);
   res.json({ ok: true });
 });
@@ -1039,15 +1339,17 @@ app.post('/api/admin/demote', requireAuth, async (req, res) => {
 // GET /api/admin/export-csv  — download all users as CSV
 app.get('/api/admin/export-csv', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [users] = await dbExecute(`
-    SELECT u.id, u.name, u.email, u.role, u.created_at,
-           COALESCE(u.last_ip,'') as last_ip,
-           (SELECT COUNT(*) FROM page_visits WHERE user_id = u.id) as pages_visited,
-           (SELECT MAX(pct) FROM quiz_attempts WHERE user_id = u.id) as best_quiz_pct,
-           (SELECT COUNT(*) FROM quiz_attempts WHERE user_id = u.id) as quiz_attempts,
-           (SELECT MAX(score) FROM game_attempts WHERE user_id = u.id) as best_game_score
-    FROM users u ORDER BY u.created_at DESC
-  `);
+  const users = isDbReady()
+    ? (await dbExecute(`
+      SELECT u.id, u.name, u.email, u.role, u.created_at,
+             COALESCE(u.last_ip,'') as last_ip,
+             (SELECT COUNT(*) FROM page_visits WHERE user_id = u.id) as pages_visited,
+             (SELECT MAX(pct) FROM quiz_attempts WHERE user_id = u.id) as best_quiz_pct,
+             (SELECT COUNT(*) FROM quiz_attempts WHERE user_id = u.id) as quiz_attempts,
+             (SELECT MAX(score) FROM game_attempts WHERE user_id = u.id) as best_game_score
+      FROM users u ORDER BY u.created_at DESC
+    `))[0]
+    : listLocalAdminUsers();
   const header = 'id,name,email,role,created_at,last_ip,pages_visited,best_quiz_pct,quiz_attempts,best_game_score';
   const rows = users.map(u =>
     [u.id, `"${u.name.replace(/"/g,'""')}"`, `"${u.email}"`, u.role, u.created_at,
@@ -1142,6 +1444,21 @@ app.get('/api/admin/export-feedback-excel', requireAuth, async (req, res) => {
 
 // POST /api/admin/seed  — make yourself admin (only works if you have no admins yet)
 app.post('/api/admin/seed', requireAuth, async (req, res) => {
+  if (!isDbReady()) {
+    const store = readLocalAuthStore();
+    const adminCount = store.users.filter(u => ensureLocalUserShape(u).role === 'admin').length;
+    if (adminCount > 0) return res.status(403).json({ error: 'Admins already exist' });
+    const user = store.users.find(u => Number(u.id) === Number(req.user.id));
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    user.role = 'admin';
+    writeLocalAuthStore(store);
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name, role: 'admin' },
+      JWT_SECRET, { expiresIn: JWT_EXPIRY }
+    );
+    return res.json({ ok: true, message: 'You are now admin. Please log out and log back in.', token });
+  }
+
   const [[{ c }]] = await dbExecute("SELECT COUNT(*) as c FROM users WHERE role='admin'");
   if (c > 0) return res.status(403).json({ error: 'Admins already exist' });
   await dbExecute('UPDATE users SET role = ? WHERE id = ?', ['admin', req.user.id]);

@@ -146,6 +146,13 @@ const MODULE_TIPS: Record<number, string[]> = {
 }
 
 const LS_KEY = (userId: number | undefined) => `gyd_completed_${userId ?? 'guest'}`
+const DEFAULT_MODULE_VIDEO_URLS: Record<string, string> = {
+  module1: 'https://www.youtube.com/embed/83HMr13zbhc',
+  module2: 'https://www.youtube.com/embed/IwDSwe7OtJg',
+  module3: 'https://www.youtube.com/embed/s2SfPN3atlY',
+  module4: 'https://www.youtube.com/embed/7g9YwY5N1KU',
+  module5: 'https://www.youtube.com/embed/QAWKgRVft80',
+}
 
 export default function ModulePage() {
   const { id } = useParams()
@@ -176,11 +183,41 @@ export default function ModulePage() {
 
   useEffect(() => {
     if (!mod) return
-    fetch(`/api/videos/module${mod.number}`)
-      .then(r => r.json())
-      .then(d => { if (d.url) setVideoUrl(d.url) })
-      .catch(() => {})
-  }, [mod])
+    let cancelled = false
+    const moduleId = `module${mod.number}`
+    const authHeaders = token ? { Authorization: `Bearer ${token}` } : undefined
+
+    const loadVideoUrl = async () => {
+      let resolvedUrl = ''
+
+      // Primary: public video endpoint (works for guests + logged-in users).
+      try {
+        const resp = await fetch(`/api/videos/${moduleId}`, authHeaders ? { headers: authHeaders } : undefined)
+        const body = await resp.json().catch(() => ({}))
+        if (resp.ok && typeof body?.url === 'string' && body.url.trim()) {
+          resolvedUrl = body.url.trim()
+        }
+      } catch { /* fall through to fallback */ }
+
+      // Fallback: for authenticated sessions, read from admin videos list if needed.
+      if (!resolvedUrl && authHeaders) {
+        try {
+          const resp = await fetch('/api/admin/videos', { headers: authHeaders })
+          const body = await resp.json().catch(() => ({}))
+          if (resp.ok && Array.isArray(body?.videos)) {
+            const row = body.videos.find((v: { module_id?: string; url?: string }) => v?.module_id === moduleId)
+            if (row?.url && String(row.url).trim()) resolvedUrl = String(row.url).trim()
+          }
+        } catch { /* use static fallback */ }
+      }
+
+      if (!resolvedUrl) resolvedUrl = DEFAULT_MODULE_VIDEO_URLS[moduleId] || ''
+      if (!cancelled) setVideoUrl(resolvedUrl)
+    }
+
+    loadVideoUrl()
+    return () => { cancelled = true }
+  }, [mod?.number, token])
 
   const saveToLocalStorage = (modId: string) => {
     try {
