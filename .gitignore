@@ -46,3 +46,6 @@ Videos/
 # Logs
 *.log
 npm-debug.log*
+
+# Local auth fallback storage (runtime-generated)
+data/*.json

@@ -33,6 +33,78 @@ const JWT_EXPIRY = '7d';
 // ─── MySQL Connection Pool ──────────────────────────────────────
 let pool = null;
 let DB_LOAD_ERROR = null;
+const LOCAL_AUTH_DIR = path.join(__dirname, 'data');
+const LOCAL_AUTH_FILE = path.join(LOCAL_AUTH_DIR, 'auth-users.json');
+
+function createDbUnavailableError() {
+  const err = new Error('Database unavailable');
+  err.code = 'DB_UNAVAILABLE';
+  return err;
+}
+
+function isDbReady() {
+  return !!pool;
+}
+
+async function dbExecute(sql, params = []) {
+  if (!pool) throw createDbUnavailableError();
+  return pool.execute(sql, params);
+}
+
+function ensureLocalAuthStore() {
+  if (!fs.existsSync(LOCAL_AUTH_DIR)) fs.mkdirSync(LOCAL_AUTH_DIR, { recursive: true });
+  if (!fs.existsSync(LOCAL_AUTH_FILE)) {
+    const seed = {
+      nextId: 2,
+      users: [{
+        id: 1,
+        name: 'Demo User',
+        email: 'demo@guardyourdata.com',
+        password: bcrypt.hashSync('Demo1234!', 12),
+        role: 'learner',
+        email_verified: 1,
+        last_ip: '',
+        created_at: new Date().toISOString(),
+      }],
+    };
+    fs.writeFileSync(LOCAL_AUTH_FILE, JSON.stringify(seed, null, 2), 'utf8');
+  }
+}
+
+function readLocalAuthStore() {
+  ensureLocalAuthStore();
+  try {
+    const raw = fs.readFileSync(LOCAL_AUTH_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.users) || typeof parsed.nextId !== 'number') {
+      throw new Error('Invalid local auth store shape');
+    }
+    return parsed;
+  } catch {
+    const reset = { nextId: 1, users: [] };
+    fs.writeFileSync(LOCAL_AUTH_FILE, JSON.stringify(reset, null, 2), 'utf8');
+    return reset;
+  }
+}
+
+function writeLocalAuthStore(store) {
+  ensureLocalAuthStore();
+  const tmp = LOCAL_AUTH_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(store, null, 2), 'utf8');
+  fs.renameSync(tmp, LOCAL_AUTH_FILE);
+}
+
+function getLocalUserByEmail(email) {
+  const store = readLocalAuthStore();
+  const user = store.users.find(u => u.email === email.toLowerCase().trim()) || null;
+  return { store, user };
+}
+
+function getLocalUserById(id) {
+  const store = readLocalAuthStore();
+  const user = store.users.find(u => Number(u.id) === Number(id)) || null;
+  return { store, user };
+}
 
 async function initDb() {
   try {
@@ -46,10 +118,10 @@ async function initDb() {
       connectionLimit:    10,
       charset:            'utf8mb4',
     });
-    await pool.execute('SELECT 1'); // test connection
+    await dbExecute('SELECT 1'); // test connection
     console.log('  \u2705  MySQL connected to', process.env.DB_HOST || 'localhost');
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS users (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS users (
       id             INT AUTO_INCREMENT PRIMARY KEY,
       name           VARCHAR(255) NOT NULL,
       email          VARCHAR(255) NOT NULL UNIQUE,
@@ -60,7 +132,7 @@ async function initDb() {
       created_at     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS page_visits (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS page_visits (
       id         INT AUTO_INCREMENT PRIMARY KEY,
       user_id    INT          NOT NULL,
       page       VARCHAR(255) NOT NULL,
@@ -69,7 +141,7 @@ async function initDb() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS quiz_attempts (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS quiz_attempts (
       id          INT AUTO_INCREMENT PRIMARY KEY,
       user_id     INT         NOT NULL,
       score       INT         NOT NULL,
@@ -82,7 +154,7 @@ async function initDb() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS game_attempts (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS game_attempts (
       id         INT AUTO_INCREMENT PRIMARY KEY,
       user_id    INT         NOT NULL,
       score      INT         NOT NULL,
@@ -94,14 +166,14 @@ async function initDb() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS module_videos (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS module_videos (
       id         INT AUTO_INCREMENT PRIMARY KEY,
       module_id  VARCHAR(50) NOT NULL UNIQUE,
       url        TEXT        NOT NULL,
       updated_at DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS otp_tokens (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS otp_tokens (
       id         INT AUTO_INCREMENT PRIMARY KEY,
       email      VARCHAR(255) NOT NULL,
       code_hash  TEXT         NOT NULL,
@@ -110,7 +182,7 @@ async function initDb() {
       used       TINYINT(1)   NOT NULL DEFAULT 0
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS module_completions (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS module_completions (
       id           INT AUTO_INCREMENT PRIMARY KEY,
       user_id      INT         NOT NULL,
       module_id    VARCHAR(50) NOT NULL,
@@ -121,7 +193,7 @@ async function initDb() {
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    await pool.execute(`CREATE TABLE IF NOT EXISTS feedback (
+    await dbExecute(`CREATE TABLE IF NOT EXISTS feedback (
       id           INT AUTO_INCREMENT PRIMARY KEY,
       name         VARCHAR(255) NOT NULL,
       email        VARCHAR(255) NOT NULL,
@@ -132,15 +204,15 @@ async function initDb() {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
     // Safe migrations for older DBs
-    try { await pool.execute("ALTER TABLE users ADD COLUMN last_ip VARCHAR(100) DEFAULT ''"); } catch (_) {}
-    try { await pool.execute("ALTER TABLE users ADD COLUMN email_verified TINYINT(1) DEFAULT 1"); } catch (_) {}
+    try { await dbExecute("ALTER TABLE users ADD COLUMN last_ip VARCHAR(100) DEFAULT ''"); } catch (_) {}
+    try { await dbExecute("ALTER TABLE users ADD COLUMN email_verified TINYINT(1) DEFAULT 1"); } catch (_) {}
 
     // Ensure admin email is always admin
     try {
       const ADMIN_EMAIL = 'icyace007@gmail.com';
-      const [rows] = await pool.execute('SELECT id, role FROM users WHERE email = ?', [ADMIN_EMAIL]);
+      const [rows] = await dbExecute('SELECT id, role FROM users WHERE email = ?', [ADMIN_EMAIL]);
       if (rows.length && rows[0].role !== 'admin') {
-        await pool.execute("UPDATE users SET role = 'admin' WHERE email = ?", [ADMIN_EMAIL]);
+        await dbExecute("UPDATE users SET role = 'admin' WHERE email = ?", [ADMIN_EMAIL]);
         console.log(`  \u2705  Promoted ${ADMIN_EMAIL} to admin`);
       }
     } catch (e) { console.warn('  \u26a0\ufe0f  ensureAdminEmail skipped:', e.message); }
@@ -148,16 +220,16 @@ async function initDb() {
     // Ensure superuser ace0404@admin.com
     try {
       const SU_EMAIL = 'ace0404@admin.com';
-      const [rows] = await pool.execute('SELECT id, role FROM users WHERE email = ?', [SU_EMAIL]);
+      const [rows] = await dbExecute('SELECT id, role FROM users WHERE email = ?', [SU_EMAIL]);
       if (!rows.length) {
         const hash = bcrypt.hashSync('ace0404@admin.com', 12);
-        await pool.execute(
+        await dbExecute(
           "INSERT IGNORE INTO users (name, email, password, role, email_verified) VALUES (?, ?, ?, 'admin', 1)",
           ['Ace Admin', SU_EMAIL, hash]
         );
         console.log('  \u2705  Created superuser ace0404@admin.com');
       } else if (rows[0].role !== 'admin') {
-        await pool.execute("UPDATE users SET role='admin' WHERE email=?", [SU_EMAIL]);
+        await dbExecute("UPDATE users SET role='admin' WHERE email=?", [SU_EMAIL]);
         console.log('  \u2705  Promoted ace0404@admin.com to admin');
       }
     } catch (e) { console.warn('  \u26a0\ufe0f  ensureSuperuser skipped:', e.message); }
@@ -165,10 +237,10 @@ async function initDb() {
     // Ensure demo learner
     try {
       const DL_EMAIL = 'demo@guardyourdata.com';
-      const [rows] = await pool.execute('SELECT id FROM users WHERE email = ?', [DL_EMAIL]);
+      const [rows] = await dbExecute('SELECT id FROM users WHERE email = ?', [DL_EMAIL]);
       if (!rows.length) {
         const hash = bcrypt.hashSync('Demo1234!', 12);
-        await pool.execute(
+        await dbExecute(
           'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
           ['Demo User', DL_EMAIL, hash, 'learner']
         );
@@ -187,7 +259,7 @@ async function initDb() {
         { module_id: 'module5',  url: 'https://www.youtube.com/embed/QAWKgRVft80' },
       ];
       for (const v of videos) {
-        await pool.execute(
+        await dbExecute(
           'INSERT INTO module_videos (module_id, url) VALUES (?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url), updated_at = NOW()',
           [v.module_id, v.url]
         );
@@ -208,6 +280,25 @@ async function initDb() {
 const app = express();
 app.use(cors());
 app.use(express.json());
+
+// Express 4 does not auto-handle rejected promises from async handlers.
+// Wrap route handlers once so thrown async errors become JSON responses.
+function wrapRouteHandler(handler) {
+  if (typeof handler !== 'function') return handler;
+  return function wrappedHandler(req, res, next) {
+    try {
+      const out = handler(req, res, next);
+      if (out && typeof out.then === 'function') out.catch(next);
+      return out;
+    } catch (err) {
+      next(err);
+    }
+  };
+}
+for (const method of ['get', 'post', 'put', 'patch', 'delete']) {
+  const original = app[method].bind(app);
+  app[method] = (route, ...handlers) => original(route, ...handlers.map(wrapRouteHandler));
+}
 
 app.get('/pptx/:filename', (req, res) => {
   const filename = path.basename(req.params.filename);
@@ -231,6 +322,16 @@ const PUBLIC_DIR = fs.existsSync(path.join(PUBLIC_DIR_CANDIDATE, 'index.html'))
 app.use(express.static(PUBLIC_DIR));  // serve React build
 app.use('/videos', express.static(path.join(__dirname, 'Videos')));  // serve local video files
 app.use('/pptx',   express.static(path.join(__dirname, 'PPTX')));    // serve PPTX slide decks
+
+app.get('/api/health', (req, res) => {
+  res.json({
+    ok: true,
+    storage_mode: isDbReady() ? 'mysql' : 'local-file',
+    db_connected: isDbReady(),
+    db_error: DB_LOAD_ERROR || null,
+    server_time: new Date().toISOString(),
+  });
+});
 
 // ─── JWT Middleware ──────────────────────────────────────────
 function requireAuth(req, res, next) {
@@ -266,21 +367,54 @@ app.post('/api/auth/register', async (req, res) => {
   if (pwErr) return res.status(400).json({ error: pwErr });
 
   const cleanEmail = email.toLowerCase().trim();
-  const [existing] = await pool.execute('SELECT id FROM users WHERE email = ?', [cleanEmail]);
-  if (existing.length)
-    return res.status(409).json({ error: 'An account with this email already exists.' });
-
   const role = cleanEmail === 'icyace007@gmail.com' ? 'admin' : 'learner';
   const hash = bcrypt.hashSync(password, 12);
-  const [info] = await pool.execute(
+
+  // Fallback path for cPanel hosts where MySQL is not configured yet.
+  if (!isDbReady()) {
+    const { store, user: existingUser } = getLocalUserByEmail(cleanEmail);
+    if (existingUser) return res.status(409).json({ error: 'An account with this email already exists.' });
+
+    const newUser = {
+      id: store.nextId++,
+      name: name.trim(),
+      email: cleanEmail,
+      password: hash,
+      role,
+      email_verified: 1,
+      last_ip: '',
+      created_at: new Date().toISOString(),
+    };
+    store.users.push(newUser);
+    writeLocalAuthStore(store);
+
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRY }
+    );
+    console.log(`  \u2705  [REG][local-file] ${cleanEmail}`);
+    return res.json({
+      token,
+      user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role },
+    });
+  }
+
+  const [existing] = await dbExecute('SELECT id FROM users WHERE email = ?', [cleanEmail]);
+  if (existing.length) return res.status(409).json({ error: 'An account with this email already exists.' });
+
+  const [info] = await dbExecute(
     'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
     [name.trim(), cleanEmail, hash, role]
   );
-
   const code = generateOtp();
   const newUser = { id: info.insertId, name: name.trim(), email: cleanEmail, role };
-  const token = jwt.sign({ id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
-  console.log(`  \u2705  [REG] ${cleanEmail} \u2014 auto-verified, demo code: ${code}`);
+  const token = jwt.sign(
+    { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRY }
+  );
+  console.log(`  \u2705  [REG][mysql] ${cleanEmail} \u2014 auto-verified, demo code: ${code}`);
   res.json({ token, user: newUser, demo_code: code });
 });
 
@@ -290,16 +424,35 @@ app.post('/api/auth/login', async (req, res) => {
   if (!email || !password)
     return res.status(400).json({ error: 'Email and password are required.' });
 
-  const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+  const cleanEmail = email.toLowerCase().trim();
+  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
+
+  if (!isDbReady()) {
+    const { store, user } = getLocalUserByEmail(cleanEmail);
+    if (!user || !bcrypt.compareSync(password, user.password)) {
+      return res.status(401).json({ error: 'Invalid email or password.' });
+    }
+    user.last_ip = ip;
+    writeLocalAuthStore(store);
+    const token = jwt.sign(
+      { id: user.id, email: user.email, name: user.name, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRY }
+    );
+    return res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+  }
+
+  const [rows] = await dbExecute('SELECT * FROM users WHERE email = ?', [cleanEmail]);
   const user = rows[0];
-  if (!user || !bcrypt.compareSync(password, user.password))
+  if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(401).json({ error: 'Invalid email or password.' });
+  }
 
   if (user.email_verified === 0) {
     await cleanExpiredOtps();
     const code = generateOtp();
     const otpHash = bcrypt.hashSync(code, 8);
-    await pool.execute(
+    await dbExecute(
       "INSERT INTO otp_tokens (email, code_hash, purpose, expires_at) VALUES (?, ?, 'email', DATE_ADD(NOW(), INTERVAL 30 MINUTE))",
       [user.email, otpHash]
     );
@@ -307,16 +460,27 @@ app.post('/api/auth/login', async (req, res) => {
     return res.status(403).json({ error: 'Please verify your email first.', pending: true, email: user.email, demo_code: code });
   }
 
-  const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
-  await pool.execute("UPDATE users SET last_ip = ? WHERE id = ?", [ip, user.id]);
-
+  await dbExecute("UPDATE users SET last_ip = ? WHERE id = ?", [ip, user.id]);
   const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
   res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
 });
 
 // GET /api/auth/me
 app.get('/api/auth/me', requireAuth, async (req, res) => {
-  const [rows] = await pool.execute('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.user.id]);
+  if (!isDbReady()) {
+    const { user } = getLocalUserById(req.user.id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    return res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        created_at: user.created_at,
+      }
+    });
+  }
+  const [rows] = await dbExecute('SELECT id, name, email, role, created_at FROM users WHERE id = ?', [req.user.id]);
   if (!rows.length) return res.status(404).json({ error: 'User not found' });
   res.json({ user: rows[0] });
 });
@@ -326,20 +490,20 @@ function generateOtp() {
   return String(Math.floor(100000 + Math.random() * 900000));
 }
 async function cleanExpiredOtps() {
-  await pool.execute("DELETE FROM otp_tokens WHERE expires_at < NOW() OR used = 1");
+  await dbExecute("DELETE FROM otp_tokens WHERE expires_at < NOW() OR used = 1");
 }
 
 // POST /api/auth/forgot  — request password-reset OTP
 app.post('/api/auth/forgot', async (req, res) => {
   const { email } = req.body || {};
   if (!email) return res.status(400).json({ error: 'Email is required.' });
-  const [rows] = await pool.execute('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+  const [rows] = await dbExecute('SELECT id FROM users WHERE email = ?', [email.toLowerCase().trim()]);
   if (!rows.length) return res.json({ ok: true, demo_code: null, message: 'If this email exists, a code was sent.' });
 
   await cleanExpiredOtps();
   const code = generateOtp();
   const hash = bcrypt.hashSync(code, 8);
-  await pool.execute(
+  await dbExecute(
     "INSERT INTO otp_tokens (email, code_hash, purpose, expires_at) VALUES (?, ?, 'reset', DATE_ADD(NOW(), INTERVAL 10 MINUTE))",
     [email.toLowerCase().trim(), hash]
   );
@@ -356,19 +520,19 @@ app.post('/api/auth/reset-password', async (req, res) => {
   if (pwErr) return res.status(400).json({ error: pwErr });
 
   await cleanExpiredOtps();
-  const [rows] = await pool.execute(
+  const [rows] = await dbExecute(
     "SELECT * FROM otp_tokens WHERE email = ? AND purpose = 'reset' AND used = 0 AND expires_at > NOW() ORDER BY id DESC LIMIT 5",
     [email.toLowerCase().trim()]
   );
   const match = rows.find(r => bcrypt.compareSync(code, r.code_hash));
   if (!match) return res.status(400).json({ error: 'Invalid or expired code. Please request a new one.' });
 
-  await pool.execute('UPDATE otp_tokens SET used = 1 WHERE id = ?', [match.id]);
+  await dbExecute('UPDATE otp_tokens SET used = 1 WHERE id = ?', [match.id]);
 
   const hash = bcrypt.hashSync(newPassword, 12);
-  await pool.execute('UPDATE users SET password = ? WHERE email = ?', [hash, email.toLowerCase().trim()]);
+  await dbExecute('UPDATE users SET password = ? WHERE email = ?', [hash, email.toLowerCase().trim()]);
 
-  const [userRows] = await pool.execute('SELECT id, name, email, role FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+  const [userRows] = await dbExecute('SELECT id, name, email, role FROM users WHERE email = ?', [email.toLowerCase().trim()]);
   const user = userRows[0];
   const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
   res.json({ ok: true, token, user });
@@ -380,20 +544,20 @@ app.post('/api/auth/verify-email', async (req, res) => {
   if (!email || !code) return res.status(400).json({ error: 'Email and code are required.' });
 
   await cleanExpiredOtps();
-  const [rows] = await pool.execute(
+  const [rows] = await dbExecute(
     "SELECT * FROM otp_tokens WHERE email = ? AND purpose = 'email' AND used = 0 AND expires_at > NOW() ORDER BY id DESC LIMIT 5",
     [email.toLowerCase().trim()]
   );
   const match = rows.find(r => bcrypt.compareSync(code, r.code_hash));
   if (!match) return res.status(400).json({ error: 'Invalid or expired code.' });
 
-  await pool.execute('UPDATE otp_tokens SET used = 1 WHERE id = ?', [match.id]);
-  await pool.execute('UPDATE users SET email_verified = 1 WHERE email = ?', [email.toLowerCase().trim()]);
+  await dbExecute('UPDATE otp_tokens SET used = 1 WHERE id = ?', [match.id]);
+  await dbExecute('UPDATE users SET email_verified = 1 WHERE email = ?', [email.toLowerCase().trim()]);
 
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
-  const [userRows] = await pool.execute('SELECT id, name, email, role FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+  const [userRows] = await dbExecute('SELECT id, name, email, role FROM users WHERE email = ?', [email.toLowerCase().trim()]);
   const user = userRows[0];
-  await pool.execute("UPDATE users SET last_ip = ? WHERE id = ?", [ip, user.id]);
+  await dbExecute("UPDATE users SET last_ip = ? WHERE id = ?", [ip, user.id]);
 
   const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
   res.json({ ok: true, token, user });
@@ -404,7 +568,7 @@ app.post('/api/auth/2fa/init', async (req, res) => {
   const { email, password } = req.body || {};
   if (!email || !password) return res.status(400).json({ error: 'Email and password are required.' });
 
-  const [rows] = await pool.execute('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+  const [rows] = await dbExecute('SELECT * FROM users WHERE email = ?', [email.toLowerCase().trim()]);
   const user = rows[0];
   if (!user || !bcrypt.compareSync(password, user.password))
     return res.status(401).json({ error: 'Invalid email or password.' });
@@ -412,7 +576,7 @@ app.post('/api/auth/2fa/init', async (req, res) => {
   await cleanExpiredOtps();
   const code = generateOtp();
   const hash = bcrypt.hashSync(code, 8);
-  await pool.execute(
+  await dbExecute(
     "INSERT INTO otp_tokens (email, code_hash, purpose, expires_at) VALUES (?, ?, 'login', DATE_ADD(NOW(), INTERVAL 10 MINUTE))",
     [user.email, hash]
   );
@@ -426,19 +590,19 @@ app.post('/api/auth/2fa/verify', async (req, res) => {
   if (!email || !code) return res.status(400).json({ error: 'Email and code are required.' });
 
   await cleanExpiredOtps();
-  const [rows] = await pool.execute(
+  const [rows] = await dbExecute(
     "SELECT * FROM otp_tokens WHERE email = ? AND purpose = 'login' AND used = 0 AND expires_at > NOW() ORDER BY id DESC LIMIT 5",
     [email.toLowerCase().trim()]
   );
   const match = rows.find(r => bcrypt.compareSync(code, r.code_hash));
   if (!match) return res.status(400).json({ error: 'Invalid or expired code.' });
 
-  await pool.execute('UPDATE otp_tokens SET used = 1 WHERE id = ?', [match.id]);
+  await dbExecute('UPDATE otp_tokens SET used = 1 WHERE id = ?', [match.id]);
 
   const ip = (req.headers['x-forwarded-for'] || req.socket.remoteAddress || '').split(',')[0].trim();
-  const [userRows] = await pool.execute('SELECT id, name, email, role FROM users WHERE email = ?', [email.toLowerCase().trim()]);
+  const [userRows] = await dbExecute('SELECT id, name, email, role FROM users WHERE email = ?', [email.toLowerCase().trim()]);
   const user = userRows[0];
-  await pool.execute("UPDATE users SET last_ip = ? WHERE id = ?", [ip, user.id]);
+  await dbExecute("UPDATE users SET last_ip = ? WHERE id = ?", [ip, user.id]);
 
   const token = jwt.sign({ id: user.id, email: user.email, name: user.name, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRY });
   res.json({ ok: true, token, user });
@@ -450,14 +614,14 @@ app.post('/api/auth/2fa/verify', async (req, res) => {
 app.get('/api/progress', requireAuth, async (req, res) => {
   const uid = req.user.id;
 
-  const [visits]      = await pool.execute('SELECT page, visited_at FROM page_visits WHERE user_id = ? ORDER BY visited_at', [uid]);
-  const [quizzes]     = await pool.execute('SELECT * FROM quiz_attempts WHERE user_id = ? ORDER BY taken_at DESC LIMIT 10', [uid]);
-  const [games]       = await pool.execute('SELECT * FROM game_attempts WHERE user_id = ? ORDER BY played_at DESC LIMIT 10', [uid]);
-  const [completions] = await pool.execute('SELECT module_id, mcq_score, mcq_total, completed_at FROM module_completions WHERE user_id = ?', [uid]);
+  const [visits]      = await dbExecute('SELECT page, visited_at FROM page_visits WHERE user_id = ? ORDER BY visited_at', [uid]);
+  const [quizzes]     = await dbExecute('SELECT * FROM quiz_attempts WHERE user_id = ? ORDER BY taken_at DESC LIMIT 10', [uid]);
+  const [games]       = await dbExecute('SELECT * FROM game_attempts WHERE user_id = ? ORDER BY played_at DESC LIMIT 10', [uid]);
+  const [completions] = await dbExecute('SELECT module_id, mcq_score, mcq_total, completed_at FROM module_completions WHERE user_id = ?', [uid]);
 
-  const [[bestQuiz]]  = await pool.execute('SELECT MAX(pct) as best_pct, COUNT(*) as attempts FROM quiz_attempts WHERE user_id = ?', [uid]);
-  const [[bestGame]]  = await pool.execute('SELECT MAX(score) as best_score, COUNT(*) as attempts FROM game_attempts WHERE user_id = ?', [uid]);
-  const [[userRow]]   = await pool.execute('SELECT created_at FROM users WHERE id = ?', [uid]);
+  const [[bestQuiz]]  = await dbExecute('SELECT MAX(pct) as best_pct, COUNT(*) as attempts FROM quiz_attempts WHERE user_id = ?', [uid]);
+  const [[bestGame]]  = await dbExecute('SELECT MAX(score) as best_score, COUNT(*) as attempts FROM game_attempts WHERE user_id = ?', [uid]);
+  const [[userRow]]   = await dbExecute('SELECT created_at FROM users WHERE id = ?', [uid]);
 
   res.json({
     visits,
@@ -474,15 +638,15 @@ app.get('/api/progress', requireAuth, async (req, res) => {
 app.post('/api/progress/visit', requireAuth, async (req, res) => {
   const { page } = req.body || {};
   if (!page) return res.status(400).json({ error: 'page is required' });
-  await pool.execute('INSERT IGNORE INTO page_visits (user_id, page) VALUES (?, ?)', [req.user.id, page]);
-  const [rows] = await pool.execute('SELECT page FROM page_visits WHERE user_id = ?', [req.user.id]);
+  await dbExecute('INSERT IGNORE INTO page_visits (user_id, page) VALUES (?, ?)', [req.user.id, page]);
+  const [rows] = await dbExecute('SELECT page FROM page_visits WHERE user_id = ?', [req.user.id]);
   res.json({ visits: rows.map(r => r.page) });
 });
 
 // POST /api/progress/quiz  — save a quiz attempt
 app.post('/api/progress/quiz', requireAuth, async (req, res) => {
   const { score, total, pct, passed, elapsed_sec, filter } = req.body || {};
-  await pool.execute(
+  await dbExecute(
     'INSERT INTO quiz_attempts (user_id, score, total, pct, passed, elapsed_sec, filter) VALUES (?, ?, ?, ?, ?, ?, ?)',
     [req.user.id, score, total, pct, passed ? 1 : 0, elapsed_sec || 0, filter || 'all']
   );
@@ -492,7 +656,7 @@ app.post('/api/progress/quiz', requireAuth, async (req, res) => {
 // POST /api/progress/game  — save a game attempt
 app.post('/api/progress/game', requireAuth, async (req, res) => {
   const { score, correct, total, max_streak, rank } = req.body || {};
-  await pool.execute(
+  await dbExecute(
     'INSERT INTO game_attempts (user_id, score, correct, total, max_streak, rank) VALUES (?, ?, ?, ?, ?, ?)',
     [req.user.id, score, correct, total, max_streak || 0, rank || '']
   );
@@ -503,7 +667,7 @@ app.post('/api/progress/game', requireAuth, async (req, res) => {
 app.post('/api/progress/module-complete', requireAuth, async (req, res) => {
   const { module_id, mcq_score, mcq_total } = req.body || {};
   if (!module_id) return res.status(400).json({ error: 'module_id required' });
-  await pool.execute(
+  await dbExecute(
     `INSERT INTO module_completions (user_id, module_id, mcq_score, mcq_total)
      VALUES (?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE
@@ -519,7 +683,7 @@ app.post('/api/progress/module-complete', requireAuth, async (req, res) => {
 
 // GET /api/videos/:moduleId  — public: get video URL for a module
 app.get('/api/videos/:moduleId', async (req, res) => {
-  const [rows] = await pool.execute('SELECT url FROM module_videos WHERE module_id = ?', [req.params.moduleId]);
+  const [rows] = await dbExecute('SELECT url FROM module_videos WHERE module_id = ?', [req.params.moduleId]);
   res.json({ url: rows.length ? rows[0].url : '' });
 });
 
@@ -528,7 +692,7 @@ app.post('/api/admin/videos/:moduleId', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   const { url } = req.body || {};
   if (url === undefined) return res.status(400).json({ error: 'url required' });
-  await pool.execute(
+  await dbExecute(
     'INSERT INTO module_videos (module_id, url) VALUES (?, ?) ON DUPLICATE KEY UPDATE url = VALUES(url), updated_at = NOW()',
     [req.params.moduleId, url.trim()]
   );
@@ -538,7 +702,7 @@ app.post('/api/admin/videos/:moduleId', requireAuth, async (req, res) => {
 // GET /api/admin/videos  — admin: get all video configs
 app.get('/api/admin/videos', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [rows] = await pool.execute('SELECT module_id, url, updated_at FROM module_videos ORDER BY module_id');
+  const [rows] = await dbExecute('SELECT module_id, url, updated_at FROM module_videos ORDER BY module_id');
   res.json({ videos: rows });
 });
 
@@ -546,7 +710,7 @@ app.get('/api/admin/videos', requireAuth, async (req, res) => {
 app.get('/api/admin/users', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
-  const [users] = await pool.execute(`
+  const [users] = await dbExecute(`
     SELECT u.id, u.name, u.email, u.role, u.created_at,
            COALESCE(u.last_ip, '') as last_ip,
            (SELECT COUNT(*) FROM page_visits WHERE user_id = u.id) as pages_visited,
@@ -563,28 +727,28 @@ app.get('/api/admin/users', requireAuth, async (req, res) => {
 app.get('/api/admin/stats', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
 
-  const [[totU]]  = await pool.execute('SELECT COUNT(*) as c FROM users');
-  const [[totV]]  = await pool.execute('SELECT COUNT(*) as c FROM page_visits');
-  const [[totQ]]  = await pool.execute('SELECT COUNT(*) as c FROM quiz_attempts');
-  const [[totG]]  = await pool.execute('SELECT COUNT(*) as c FROM game_attempts');
-  const [[pass]]  = await pool.execute('SELECT ROUND(100*SUM(passed)/COUNT(*)) as r FROM quiz_attempts');
-  const [[avgQ]]  = await pool.execute('SELECT ROUND(AVG(pct)) as r FROM quiz_attempts');
-  const [[avgG]]  = await pool.execute('SELECT ROUND(AVG(score)) as r FROM game_attempts');
+  const [[totU]]  = await dbExecute('SELECT COUNT(*) as c FROM users');
+  const [[totV]]  = await dbExecute('SELECT COUNT(*) as c FROM page_visits');
+  const [[totQ]]  = await dbExecute('SELECT COUNT(*) as c FROM quiz_attempts');
+  const [[totG]]  = await dbExecute('SELECT COUNT(*) as c FROM game_attempts');
+  const [[pass]]  = await dbExecute('SELECT ROUND(100*SUM(passed)/COUNT(*)) as r FROM quiz_attempts');
+  const [[avgQ]]  = await dbExecute('SELECT ROUND(AVG(pct)) as r FROM quiz_attempts');
+  const [[avgG]]  = await dbExecute('SELECT ROUND(AVG(score)) as r FROM game_attempts');
 
-  const [pageStats] = await pool.execute('SELECT page, COUNT(*) as visits FROM page_visits GROUP BY page ORDER BY visits DESC');
-  const [pageUniq]  = await pool.execute('SELECT page, COUNT(DISTINCT user_id) as uniq_users FROM page_visits GROUP BY page ORDER BY uniq_users DESC');
-  const [recentUsers] = await pool.execute(`
+  const [pageStats] = await dbExecute('SELECT page, COUNT(*) as visits FROM page_visits GROUP BY page ORDER BY visits DESC');
+  const [pageUniq]  = await dbExecute('SELECT page, COUNT(DISTINCT user_id) as uniq_users FROM page_visits GROUP BY page ORDER BY uniq_users DESC');
+  const [recentUsers] = await dbExecute(`
     SELECT id, name, email, role, created_at,
            (SELECT COUNT(*) FROM page_visits WHERE user_id = u.id) as pages_visited
     FROM users u ORDER BY created_at DESC LIMIT 10
   `);
-  const [regTimeline] = await pool.execute(`
+  const [regTimeline] = await dbExecute(`
     SELECT DATE(created_at) as day, COUNT(*) as count
     FROM users
     WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 14 DAY)
     GROUP BY day ORDER BY day
   `);
-  const [[scoreBuckets]] = await pool.execute(`
+  const [[scoreBuckets]] = await dbExecute(`
     SELECT
       SUM(CASE WHEN pct < 40 THEN 1 ELSE 0 END) as below40,
       SUM(CASE WHEN pct >= 40 AND pct < 70 THEN 1 ELSE 0 END) as p40_70,
@@ -592,8 +756,8 @@ app.get('/api/admin/stats', requireAuth, async (req, res) => {
       SUM(CASE WHEN pct >= 90 THEN 1 ELSE 0 END) as above90
     FROM quiz_attempts
   `);
-  const [moduleSummary] = await pool.execute('SELECT module_id, COUNT(DISTINCT user_id) as users_completed FROM module_completions GROUP BY module_id ORDER BY module_id');
-  const [[totF]] = await pool.execute('SELECT COUNT(*) as c FROM feedback');
+  const [moduleSummary] = await dbExecute('SELECT module_id, COUNT(DISTINCT user_id) as users_completed FROM module_completions GROUP BY module_id ORDER BY module_id');
+  const [[totF]] = await dbExecute('SELECT COUNT(*) as c FROM feedback');
 
   res.json({
     totals: { users: totU.c, visits: totV.c, quizzes: totQ.c, games: totG.c },
@@ -608,7 +772,7 @@ app.post('/api/admin/promote', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   const { userId } = req.body || {};
   if (!userId) return res.status(400).json({ error: 'userId required' });
-  await pool.execute('UPDATE users SET role = ? WHERE id = ?', ['admin', userId]);
+  await dbExecute('UPDATE users SET role = ? WHERE id = ?', ['admin', userId]);
   res.json({ ok: true });
 });
 
@@ -617,10 +781,10 @@ app.delete('/api/admin/users/:id', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
   const targetId = parseInt(req.params.id, 10);
   if (!targetId || targetId === req.user.id) return res.status(400).json({ error: 'Cannot delete your own account' });
-  const [rows] = await pool.execute('SELECT role FROM users WHERE id = ?', [targetId]);
+  const [rows] = await dbExecute('SELECT role FROM users WHERE id = ?', [targetId]);
   if (!rows.length) return res.status(404).json({ error: 'User not found' });
   if (rows[0].role === 'admin') return res.status(403).json({ error: 'Cannot delete another admin' });
-  await pool.execute('DELETE FROM users WHERE id = ?', [targetId]);
+  await dbExecute('DELETE FROM users WHERE id = ?', [targetId]);
   res.json({ ok: true });
 });
 
@@ -630,14 +794,14 @@ app.post('/api/admin/demote', requireAuth, async (req, res) => {
   const { userId } = req.body || {};
   if (!userId) return res.status(400).json({ error: 'userId required' });
   if (userId === req.user.id) return res.status(400).json({ error: 'Cannot demote yourself' });
-  await pool.execute("UPDATE users SET role = 'learner' WHERE id = ?", [userId]);
+  await dbExecute("UPDATE users SET role = 'learner' WHERE id = ?", [userId]);
   res.json({ ok: true });
 });
 
 // GET /api/admin/export-csv  — download all users as CSV
 app.get('/api/admin/export-csv', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [users] = await pool.execute(`
+  const [users] = await dbExecute(`
     SELECT u.id, u.name, u.email, u.role, u.created_at,
            COALESCE(u.last_ip,'') as last_ip,
            (SELECT COUNT(*) FROM page_visits WHERE user_id = u.id) as pages_visited,
@@ -661,7 +825,7 @@ app.post('/api/feedback', async (req, res) => {
   const { name, email, age_group, industry, remarks } = req.body || {};
   if (!name || !email || !age_group || !industry)
     return res.status(400).json({ error: 'Name, email, age group and industry are required.' });
-  await pool.execute(
+  await dbExecute(
     'INSERT INTO feedback (name, email, age_group, industry, remarks) VALUES (?, ?, ?, ?, ?)',
     [name.trim(), email.toLowerCase().trim(), age_group, industry, (remarks || '').trim()]
   );
@@ -671,7 +835,7 @@ app.post('/api/feedback', async (req, res) => {
 // GET /api/admin/feedback  — admin: list all feedback
 app.get('/api/admin/feedback', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [rows] = await pool.execute(
+  const [rows] = await dbExecute(
     'SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'
   );
   res.json({ feedback: rows });
@@ -680,7 +844,7 @@ app.get('/api/admin/feedback', requireAuth, async (req, res) => {
 // GET /api/admin/export-feedback  — admin: CSV download
 app.get('/api/admin/export-feedback', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [rows] = await pool.execute(
+  const [rows] = await dbExecute(
     'SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'
   );
   const header = 'id,name,email,age_group,industry,remarks,submitted_at';
@@ -696,7 +860,7 @@ app.get('/api/admin/export-feedback', requireAuth, async (req, res) => {
 // GET /api/admin/export-feedback-excel  — admin: Excel .xlsx download
 app.get('/api/admin/export-feedback-excel', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [rows] = await pool.execute(
+  const [rows] = await dbExecute(
     'SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'
   );
   const ws = XLSX.utils.json_to_sheet(rows.map(r => ({
@@ -719,9 +883,9 @@ app.get('/api/admin/export-feedback-excel', requireAuth, async (req, res) => {
 
 // POST /api/admin/seed  — make yourself admin (only works if you have no admins yet)
 app.post('/api/admin/seed', requireAuth, async (req, res) => {
-  const [[{ c }]] = await pool.execute("SELECT COUNT(*) as c FROM users WHERE role='admin'");
+  const [[{ c }]] = await dbExecute("SELECT COUNT(*) as c FROM users WHERE role='admin'");
   if (c > 0) return res.status(403).json({ error: 'Admins already exist' });
-  await pool.execute('UPDATE users SET role = ? WHERE id = ?', ['admin', req.user.id]);
+  await dbExecute('UPDATE users SET role = ? WHERE id = ?', ['admin', req.user.id]);
   const token = jwt.sign(
     { id: req.user.id, email: req.user.email, name: req.user.name, role: 'admin' },
     JWT_SECRET, { expiresIn: JWT_EXPIRY }
@@ -779,13 +943,30 @@ app.get('*', (req, res) => {
   }
 });
 
+app.use((err, req, res, _next) => {
+  const looksLikeDbIssue =
+    err?.code === 'DB_UNAVAILABLE' ||
+    /Cannot read properties of null \(reading 'execute'\)/.test(err?.message || '');
+
+  if (looksLikeDbIssue) {
+    return res.status(503).json({
+      error: 'Database is not configured yet on the server.',
+      storage_mode: isDbReady() ? 'mysql' : 'local-file',
+    });
+  }
+
+  console.error('❌ API error:', err?.stack || err?.message || err);
+  if (res.headersSent) return;
+  res.status(500).json({ error: 'Internal server error' });
+});
+
 // ─── Start ───────────────────────────────────────────────────
 initDb().then(() => {
   app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n  \ud83d\udee1\ufe0f  FIN7900 Training Platform`);
     console.log(`  \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500`);
     console.log(`  Local:   http://localhost:${PORT}`);
-    console.log(`  DB:      MySQL @ ${process.env.DB_HOST || 'localhost'}/${process.env.DB_NAME || 'fin7900'}`);
+    console.log(`  DB:      ${isDbReady() ? `MySQL @ ${process.env.DB_HOST || 'localhost'}/${process.env.DB_NAME || 'fin7900'}` : `fallback local file (${LOCAL_AUTH_FILE})`}`);
     console.log(`  Mode:    \ud83c\udfaf  Demo \u2014 OTP codes shown on screen\n`);
   });
 }).catch(err => {
