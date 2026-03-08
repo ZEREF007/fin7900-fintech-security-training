@@ -220,7 +220,15 @@ app.get('/pptx/:filename', (req, res) => {
   res.sendFile(filePath);
 });
 
-app.use(express.static(path.join(__dirname, 'public')));  // serve React build
+// cPanel deployments can place frontend files in either:
+//   1) <app>/public/*  (preferred)
+//   2) <app>/*         (flat copy)
+const PUBLIC_DIR_CANDIDATE = path.join(__dirname, 'public');
+const PUBLIC_DIR = fs.existsSync(path.join(PUBLIC_DIR_CANDIDATE, 'index.html'))
+  ? PUBLIC_DIR_CANDIDATE
+  : __dirname;
+
+app.use(express.static(PUBLIC_DIR));  // serve React build
 app.use('/videos', express.static(path.join(__dirname, 'Videos')));  // serve local video files
 app.use('/pptx',   express.static(path.join(__dirname, 'PPTX')));    // serve PPTX slide decks
 
@@ -765,7 +773,7 @@ app.get('/api/live/cisa', async (req, res) => {
 app.get('*', (req, res) => {
   // Only catch non-API paths
   if (!req.path.startsWith('/api/')) {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(PUBLIC_DIR, 'index.html'));
   } else {
     res.status(404).json({ error: 'Not found' });
   }
