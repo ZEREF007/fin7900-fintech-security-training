@@ -40,6 +40,7 @@ let pool = null;
 let DB_LOAD_ERROR = null;
 const LOCAL_AUTH_DIR = path.join(__dirname, 'data');
 const LOCAL_AUTH_FILE = path.join(LOCAL_AUTH_DIR, 'auth-users.json');
+const LOCAL_FEEDBACK_FILE = path.join(LOCAL_AUTH_DIR, 'feedback.json');
 
 function createDbUnavailableError() {
   const err = new Error('Database unavailable');
@@ -231,6 +232,45 @@ function buildLocalProgressPayload(user) {
     moduleCompletions,
     created_at: u.created_at || null,
   };
+}
+
+function ensureLocalFeedbackStore() {
+  if (!fs.existsSync(LOCAL_AUTH_DIR)) fs.mkdirSync(LOCAL_AUTH_DIR, { recursive: true });
+  if (!fs.existsSync(LOCAL_FEEDBACK_FILE)) {
+    fs.writeFileSync(
+      LOCAL_FEEDBACK_FILE,
+      JSON.stringify({ nextId: 1, feedback: [] }, null, 2),
+      'utf8'
+    );
+  }
+}
+
+function readLocalFeedbackStore() {
+  ensureLocalFeedbackStore();
+  try {
+    const raw = fs.readFileSync(LOCAL_FEEDBACK_FILE, 'utf8');
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.feedback) || typeof parsed.nextId !== 'number') {
+      throw new Error('Invalid local feedback store shape');
+    }
+    return parsed;
+  } catch {
+    const reset = { nextId: 1, feedback: [] };
+    fs.writeFileSync(LOCAL_FEEDBACK_FILE, JSON.stringify(reset, null, 2), 'utf8');
+    return reset;
+  }
+}
+
+function writeLocalFeedbackStore(store) {
+  ensureLocalFeedbackStore();
+  const tmp = LOCAL_FEEDBACK_FILE + '.tmp';
+  fs.writeFileSync(tmp, JSON.stringify(store, null, 2), 'utf8');
+  fs.renameSync(tmp, LOCAL_FEEDBACK_FILE);
+}
+
+function listLocalFeedbackRows() {
+  const store = readLocalFeedbackStore();
+  return [...store.feedback].sort((a, b) => String(b.submitted_at).localeCompare(String(a.submitted_at)));
 }
 
 async function initDb() {
@@ -1023,6 +1063,22 @@ app.post('/api/feedback', async (req, res) => {
   const { name, email, age_group, industry, remarks } = req.body || {};
   if (!name || !email || !age_group || !industry)
     return res.status(400).json({ error: 'Name, email, age group and industry are required.' });
+
+  if (!isDbReady()) {
+    const store = readLocalFeedbackStore();
+    store.feedback.push({
+      id: store.nextId++,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
+      age_group,
+      industry,
+      remarks: (remarks || '').trim(),
+      submitted_at: toIsoNow(),
+    });
+    writeLocalFeedbackStore(store);
+    return res.json({ ok: true });
+  }
+
   await dbExecute(
     'INSERT INTO feedback (name, email, age_group, industry, remarks) VALUES (?, ?, ?, ?, ?)',
     [name.trim(), email.toLowerCase().trim(), age_group, industry, (remarks || '').trim()]
@@ -1033,6 +1089,11 @@ app.post('/api/feedback', async (req, res) => {
 // GET /api/admin/feedback  — admin: list all feedback
 app.get('/api/admin/feedback', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
+
+  if (!isDbReady()) {
+    return res.json({ feedback: listLocalFeedbackRows() });
+  }
+
   const [rows] = await dbExecute(
     'SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'
   );
@@ -1042,9 +1103,9 @@ app.get('/api/admin/feedback', requireAuth, async (req, res) => {
 // GET /api/admin/export-feedback  — admin: CSV download
 app.get('/api/admin/export-feedback', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [rows] = await dbExecute(
-    'SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'
-  );
+  const rows = isDbReady()
+    ? (await dbExecute('SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'))[0]
+    : listLocalFeedbackRows();
   const header = 'id,name,email,age_group,industry,remarks,submitted_at';
   const lines = rows.map(r =>
     [r.id, `"${r.name.replace(/"/g,'""')}"`, `"${r.email}"`, `"${r.age_group}"`,
@@ -1058,9 +1119,9 @@ app.get('/api/admin/export-feedback', requireAuth, async (req, res) => {
 // GET /api/admin/export-feedback-excel  — admin: Excel .xlsx download
 app.get('/api/admin/export-feedback-excel', requireAuth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Forbidden' });
-  const [rows] = await dbExecute(
-    'SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'
-  );
+  const rows = isDbReady()
+    ? (await dbExecute('SELECT id, name, email, age_group, industry, remarks, submitted_at FROM feedback ORDER BY submitted_at DESC'))[0]
+    : listLocalFeedbackRows();
   const ws = XLSX.utils.json_to_sheet(rows.map(r => ({
     'ID':           r.id,
     'Name':         r.name,

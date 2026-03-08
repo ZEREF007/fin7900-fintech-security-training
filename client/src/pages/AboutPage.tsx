@@ -109,61 +109,9 @@ export default function AboutPage() {
           </div>
         </motion.div>
 
-        {/* About me — LinkedIn bio */}
-        <motion.div
-          custom={1}
-          variants={fadeUp}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-[#0A66C2]/10 dark:bg-[#0A66C2]/20 flex items-center justify-center">
-              <Linkedin className="w-5 h-5 text-[#0A66C2]" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">About Me</h2>
-          </div>
-          <div className="card space-y-4">
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
-              Computer Science graduate currently pursuing an MSc in Finance at Hong Kong Baptist University,
-              specializing in Algorithmic and High Frequency Trading. Achieved a 4.0 CGPA and recipient of
-              the Hong Kong Future Talents Scholarship (HKD 100K).
-            </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
-              I have experience on both the technology and finance side. I worked as a Financial Consultant
-              at AMG Financial Group and as a Data Engineer at CedarGate Technologies, building reporting
-              automation and data pipelines with Python, SQL, Excel, Airflow, PySpark, and Redshift.
-            </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
-              I genuinely enjoy keeping track of global markets. I follow news and pricing daily using
-              Bloomberg Terminal, Reuters, and TradingView. I trade futures, crypto, and equities using
-              IBKR and have a strong interest in macro strategy, rates, and interest rate trading.
-            </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
-              Outside work, I play poker and chess, and enjoy adventure sports.
-            </p>
-            <p className="text-slate-700 dark:text-slate-300 leading-relaxed text-lg text-justify">
-              I am actively looking for trader, dealer, or data roles supporting trading and global markets
-              teams. Happy to work day or night shifts. I thrive in high-intensity environments where I can
-              put in 80 to 90 hours a week, take on real responsibilities, and contribute meaningfully to
-              the team. I am also open to FinTech roles.
-            </p>
-            <a
-              href="https://www.linkedin.com/in/acebhatt"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[#0A66C2] hover:underline font-semibold text-base"
-            >
-              <Linkedin className="w-4 h-4" />
-              View full profile on LinkedIn
-              <ExternalLink className="w-3.5 h-3.5 opacity-70" />
-            </a>
-          </div>
-        </motion.div>
-
         {/* Interests */}
         <motion.div
-          custom={2}
+          custom={1}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
@@ -208,7 +156,7 @@ export default function AboutPage() {
 
         {/* About the project */}
         <motion.div
-          custom={3}
+          custom={2}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
@@ -220,13 +168,13 @@ export default function AboutPage() {
             </div>
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">About This Project</h2>
           </div>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg mb-6">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg mb-6 text-justify">
             GuardYourData was designed and developed from scratch as my FIN7900 Individual
             Assignment. The goal was simple: make data-security education genuinely
             accessible to finance professionals — no jargon, no barriers, just clear and
             actionable knowledge.
           </p>
-          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg">
+          <p className="text-slate-600 dark:text-slate-400 leading-relaxed text-lg text-justify">
             I built everything you see here — the React front-end, the Node.js back-end,
             the database, the quiz engine, the live threat feed integration, theming
             system, and the report. It's been an incredible journey from blank canvas to
@@ -236,7 +184,7 @@ export default function AboutPage() {
 
         {/* What I built grid */}
         <motion.div
-          custom={4}
+          custom={3}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
@@ -269,7 +217,7 @@ export default function AboutPage() {
 
         {/* Tech stack */}
         <motion.div
-          custom={5}
+          custom={4}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
@@ -299,7 +247,7 @@ export default function AboutPage() {
 
         {/* Connect */}
         <motion.div
-          custom={6}
+          custom={5}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
@@ -330,7 +278,7 @@ export default function AboutPage() {
 
         {/* Footer note */}
         <motion.div
-          custom={7}
+          custom={6}
           variants={fadeUp}
           initial="hidden"
           whileInView="visible"
