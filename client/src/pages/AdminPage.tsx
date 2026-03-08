@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
 } from 'recharts'
@@ -51,6 +51,14 @@ interface UserRow {
 }
 
 type SortCol = 'name' | 'email' | 'joined' | 'pages' | 'score'
+type AdminTab = 'stats' | 'videos' | 'users' | 'setup' | 'feedback' | 'answers'
+
+function normalizeAdminTab(tab: string | null): AdminTab {
+  if (tab === 'stats' || tab === 'videos' || tab === 'users' || tab === 'setup' || tab === 'feedback' || tab === 'answers') {
+    return tab
+  }
+  return 'feedback'
+}
 
 function engagementBadge(pages: number) {
   if (pages === 0) return { label: 'Inactive',   color: 'bg-slate-700/50 text-slate-500' }
@@ -62,18 +70,21 @@ function engagementBadge(pages: number) {
 export default function AdminPage() {
   const { user, token } = useAuth()
   const nav = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
 
   const [stats, setStats]           = useState<Stats | null>(null)
+  const [statsError, setStatsError] = useState('')
   const [allUsers, setAllUsers]     = useState<UserRow[]>([])
   const [feedbacks, setFeedbacks]   = useState<FeedbackRow[]>([])
   const [feedbackLoading, setFbLoading] = useState(false)
+  const [feedbackError, setFeedbackError] = useState('')
   const [videoUrls, setVideoUrls]   = useState<Record<string, string>>({})
   const [savingId, setSavingId]     = useState<string | null>(null)
   const [savedId, setSavedId]       = useState<string | null>(null)
-  const [tab, setTab]               = useState<'stats' | 'videos' | 'users' | 'setup' | 'feedback' | 'answers'>('stats')
   const [copied, setCopied]         = useState(false)
   const [answerSearch, setAnswerSearch] = useState('')
   const [answerFilter, setAnswerFilter] = useState<'all' | 'basic' | 'intermediate' | 'advanced'>('all')
+  const tab = normalizeAdminTab(searchParams.get('tab'))
 
   // User management state
   const [userSearch, setUserSearch]           = useState('')
@@ -84,23 +95,57 @@ export default function AdminPage() {
 
   const authHeaders = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }
 
+  const switchTab = (nextTab: AdminTab) => {
+    const next = new URLSearchParams(searchParams)
+    next.set('tab', nextTab)
+    setSearchParams(next, { replace: true })
+  }
+
   const reload = () => {
-    fetch('/api/admin/users', { headers: authHeaders }).then(r => r.json()).then(d => {
-      if (d.users) setAllUsers(d.users)
-    })
+    fetch('/api/admin/users', { headers: authHeaders })
+      .then(async r => (r.ok ? r.json() : Promise.reject(await r.text())))
+      .then(d => setAllUsers(Array.isArray(d.users) ? d.users : []))
+      .catch(() => setAllUsers([]))
   }
 
   const loadFeedback = () => {
     setFbLoading(true)
+    setFeedbackError('')
     fetch('/api/admin/feedback', { headers: authHeaders })
-      .then(r => r.json())
-      .then(d => { if (d.feedback) setFeedbacks(d.feedback) })
+      .then(async r => (r.ok ? r.json() : Promise.reject(await r.text())))
+      .then(d => {
+        if (Array.isArray(d.feedback)) {
+          setFeedbacks(d.feedback)
+          return
+        }
+        setFeedbacks([])
+        setFeedbackError(d?.error || 'Could not load feedback data.')
+      })
+      .catch(() => {
+        setFeedbacks([])
+        setFeedbackError('Could not load feedback data.')
+      })
       .finally(() => setFbLoading(false))
   }
 
   useEffect(() => {
     if (!user || user.role !== 'admin') { nav('/'); return }
-    fetch('/api/admin/stats',  { headers: authHeaders }).then(r => r.json()).then(setStats)
+    setStatsError('')
+    fetch('/api/admin/stats',  { headers: authHeaders })
+      .then(async r => (r.ok ? r.json() : Promise.reject(await r.text())))
+      .then(d => {
+        const isValid = d?.totals && d?.rates && d?.scoreBuckets && Array.isArray(d?.pageStats) && Array.isArray(d?.moduleSummary)
+        if (isValid) {
+          setStats(d as Stats)
+          return
+        }
+        setStats(null)
+        setStatsError(d?.error || 'Could not load analytics.')
+      })
+      .catch(() => {
+        setStats(null)
+        setStatsError('Could not load analytics.')
+      })
     fetch('/api/admin/videos', { headers: authHeaders }).then(r => r.json()).then(d => {
       const map: Record<string, string> = {}
       d.videos?.forEach((v: { module_id: string; url: string }) => { map[v.module_id] = v.url })
@@ -273,7 +318,7 @@ export default function AdminPage() {
                 key={t.id}
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setTab(t.id)}
+                onClick={() => switchTab(t.id)}
                 className={clsx(
                   'px-5 py-2.5 rounded-xl text-sm font-semibold transition-all',
                   tab === t.id
@@ -413,6 +458,9 @@ export default function AdminPage() {
               <div className="flex justify-center py-16">
                 <Loader2 className="w-8 h-8 text-brand-400 animate-spin" />
               </div>
+            )}
+            {!stats && statsError && (
+              <div className="text-center text-red-300 text-sm">{statsError}</div>
             )}
           </div>
         )}
@@ -679,7 +727,7 @@ export default function AdminPage() {
             {!feedbackLoading && feedbacks.length === 0 && (
               <div className="card text-center py-16">
                 <MessageSquare className="w-12 h-12 text-slate-700 mx-auto mb-3" />
-                <p className="text-slate-500 text-sm">No feedback submitted yet.</p>
+                <p className="text-slate-500 text-sm">{feedbackError || 'No feedback submitted yet.'}</p>
                 <p className="text-slate-600 text-xs mt-1">Share the <code className="text-brand-400">/feedback</code> page with your users.</p>
               </div>
             )}
@@ -893,4 +941,3 @@ export default function AdminPage() {
     </motion.div>
   )
 }
-

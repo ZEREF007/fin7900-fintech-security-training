@@ -33,6 +33,10 @@ function DemoCodeBox({ code }: { code: string }) {
   )
 }
 
+function routeForRole(role?: 'admin' | 'learner') {
+  return role === 'admin' ? '/admin?tab=feedback' : '/'
+}
+
 export default function AuthPage() {
   const [mode, setMode]            = useState<Mode>('login')
   const [tab,  setTab]             = useState<'login' | 'register'>('login')
@@ -55,7 +59,7 @@ export default function AuthPage() {
   // Clean redirect on unmount — avoids updating state on unmounted component
   useEffect(() => {
     if (mode !== 'registered') return
-    const t = setTimeout(() => nav(redirectRole === 'admin' ? '/admin' : '/'), 2500)
+    const t = setTimeout(() => nav(routeForRole(redirectRole)), 2500)
     return () => clearTimeout(t)
   }, [mode, redirectRole, nav])
 
@@ -70,7 +74,7 @@ export default function AuthPage() {
       if (res.ok) {
         // completeLogin already called inside login()
         const u = JSON.parse(localStorage.getItem('user') || '{}')
-        nav(u.role === 'admin' ? '/admin' : '/')
+        nav(routeForRole(u.role))
       } else if (res.pending) {
         // Unverified email — redirect to OTP verification
         setDemoCode(res.demo_code || '')
@@ -119,7 +123,7 @@ export default function AuthPage() {
       const data = await r.json()
       if (!r.ok) return setError(data.error || 'Invalid code')
       completeLogin(data.token, data.user)
-      nav(data.user.role === 'admin' ? '/admin' : '/')
+      nav(routeForRole(data.user.role))
     } finally { setLoading(false) }
   }
 
@@ -164,7 +168,7 @@ export default function AuthPage() {
       const data = await r.json()
       if (!r.ok) return setError(data.error || 'Something went wrong')
       completeLogin(data.token, data.user)
-      nav(data.user.role === 'admin' ? '/admin' : '/')
+      nav(routeForRole(data.user.role))
     } finally { setLoading(false) }
   }
 

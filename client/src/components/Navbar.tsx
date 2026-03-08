@@ -274,7 +274,7 @@ export default function Navbar() {
               <>
                 {user.role === 'admin' && (
                   <Link
-                    to="/admin"
+                    to="/admin?tab=feedback"
                     className="hidden sm:flex items-center gap-1 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 dark:bg-amber-600/20 dark:hover:bg-amber-600/30 text-amber-700 dark:text-amber-300 text-xs font-semibold rounded-lg border border-amber-200 dark:border-amber-600/30 transition-all"
                   >
                     ⚙️ Admin
@@ -459,7 +459,7 @@ export default function Navbar() {
             {user && (
               <div className="px-3 pb-3 flex gap-2 border-t border-slate-100 dark:border-slate-800 pt-3">
                 {user.role === 'admin' && (
-                  <Link to="/admin" className="flex-1 btn-secondary text-center justify-center text-sm py-2">⚙️ Admin</Link>
+                  <Link to="/admin?tab=feedback" className="flex-1 btn-secondary text-center justify-center text-sm py-2">⚙️ Admin</Link>
                 )}
                 <button onClick={logout} className="flex-1 btn-secondary text-sm py-2">Sign out</button>
               </div>
